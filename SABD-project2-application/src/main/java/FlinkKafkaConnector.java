@@ -16,15 +16,16 @@ public class FlinkKafkaConnector {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
         //non obbligatorio
-        env.getConfig().setAutoWatermarkInterval(1000L);
+        //env.getConfig().setAutoWatermarkInterval(1000L);
 
         Properties properties = new Properties();
-        properties.setProperty("bootstrap.servers", "localhost:9092");
-        properties.setProperty("zookeeper.connect", "localhost:2181");
+        properties.setProperty("bootstrap.servers", "kafka:9092");
+        properties.setProperty("zookeeper.connect", "zookeeper:2181");
         properties.setProperty("group.id", "test");
         DataStream<String> stream = env
                 .addSource(new FlinkKafkaConsumer<String>("query1", new SimpleStringSchema(), properties))
-                .assignTimestampsAndWatermarks(new StringTimeAssigner());
+                .assignTimestampsAndWatermarks(new StringTimeAssigner())
+                .map(e -> e.toUpperCase());
 
         stream.print();
 
