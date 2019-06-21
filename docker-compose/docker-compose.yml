@@ -65,10 +65,10 @@ services:
         environment:
             - JOB_MANAGER_RPC_ADDRESS=jobmanager
 
-    kafka-consumer:
+    kafka-producer:
         image: wurstmeister/kafka
-        container_name: kafka-consumer
-        hostname: kafka-consumer
+        container_name: kafka-producer
+        hostname: kafka-producer
         networks:
             - app_network
         depends_on:
@@ -82,5 +82,7 @@ services:
         entrypoint: /bin/sh
         stdin_open: true
         tty: true
+        volumes:
+            - ./dataset:/sabd/dataset
 
   
