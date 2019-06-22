@@ -3,9 +3,9 @@ package erreesse.time;
 import erreesse.pojo.CommentInfoPOJO;
 import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor;
 
-public class ApproveDateTimeAssigner extends AscendingTimestampExtractor<CommentInfoPOJO> {
+public class CreateDateTimeAssigner extends AscendingTimestampExtractor<CommentInfoPOJO> {
 
-    public ApproveDateTimeAssigner() {
+    public CreateDateTimeAssigner() {
 
     }
 

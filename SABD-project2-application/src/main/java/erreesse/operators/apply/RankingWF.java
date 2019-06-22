@@ -7,6 +7,7 @@ import scala.Tuple2;
 import scala.Tuple3;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.TreeSet;
 
@@ -16,7 +17,7 @@ import java.util.TreeSet;
 * KEY
 * TW
 * */
-public class Ranking implements WindowFunction<Tuple3<Long,String,Long>,String,Long, TimeWindow> {
+public class RankingWF implements WindowFunction<Tuple3<Long,String,Long>,String,Long, TimeWindow> {
     @Override
     public void apply(Long key,
                       TimeWindow timeWindow,
@@ -30,10 +31,8 @@ public class Ranking implements WindowFunction<Tuple3<Long,String,Long>,String,L
             ordset.add(new Tuple2<>(t3._2(),t3._3()));
         }
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         StringBuilder sb = new StringBuilder();
-
-        sb.append(sdf.format(key));
+        sb.append(key);
 
         long size = Math.min(3, ordset.size());
 

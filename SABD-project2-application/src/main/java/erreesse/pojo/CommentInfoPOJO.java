@@ -3,7 +3,7 @@ package erreesse.pojo;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.*;
+import java.io.Serializable;
 
 @Data
 @NoArgsConstructor
@@ -24,8 +24,6 @@ public class CommentInfoPOJO implements Serializable {
     private String userDisplayName;
     private long userID;
 
-
-
     public static CommentInfoPOJO parseFromStringLine(String line) {
         String[] tokens = line.split(",",-1);
 
@@ -38,7 +36,9 @@ public class CommentInfoPOJO implements Serializable {
 
                 cip.setCommentID(Long.parseLong(tokens[3]));
                 cip.setCommentType(tokens[4]);
-                cip.setCreateDate(Long.parseLong(tokens[5]));
+
+                // createDateString
+                cip.setCreateDate(Long.parseLong(tokens[5])*1000L);
 
                 cip.setDepth(Integer.parseInt(tokens[6]));
                 cip.setEditorsSelection(Boolean.parseBoolean(tokens[7].toLowerCase()));
