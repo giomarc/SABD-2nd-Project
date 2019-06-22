@@ -12,7 +12,6 @@ import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
-import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
 
@@ -44,7 +43,7 @@ public class Query1 {
                 .timeWindow(Time.hours(1))
                 .apply(new Ranking());
 
-        dayStream = originalStream
+        /*dayStream = originalStream
                 .timeWindow(Time.days(1))
                 .aggregate(new ArticleCounterAggregator(), new ArticleCounterProcessWF())
                 .keyBy(new KeyByWindowStart())
@@ -56,12 +55,12 @@ public class Query1 {
                 .aggregate(new ArticleCounterAggregator(), new ArticleCounterProcessWF())
                 .keyBy(new KeyByWindowStart())
                 .timeWindow(Time.days(7))
-                .apply(new Ranking());
+                .apply(new Ranking());*/
 
         hourStream.writeAsText("/sabd/result/query1/1hour.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
-        dayStream.writeAsText("/sabd/result/query1/1day.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
+        /*dayStream.writeAsText("/sabd/result/query1/1day.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
         weekStream.writeAsText("/sabd/result/query1/1week.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
-
+*/
         try {
             env.execute("Test KafkaConnector");
         } catch (Exception e) {

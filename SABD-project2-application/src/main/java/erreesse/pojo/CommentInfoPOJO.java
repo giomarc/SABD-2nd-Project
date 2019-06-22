@@ -3,7 +3,7 @@ package erreesse.pojo;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
+import java.io.*;
 
 @Data
 @NoArgsConstructor
@@ -49,7 +49,7 @@ public class CommentInfoPOJO implements Serializable {
                 cip.setUserID(Long.parseLong(tokens[13]));
 
             } catch (NumberFormatException e) {
-
+                System.err.println(e.getMessage());
             }
         }
 

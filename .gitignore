@@ -27,5 +27,5 @@ hs_err_pid*
 .DS_Store
 target
 
-docker-compose/dataset
+docker-compose/dataset/Comments_jan-apr2018.csv
 docker-compose/flink_jar
