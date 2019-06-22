@@ -9,6 +9,7 @@ public class CommentInfoSource extends FlinkKafkaConsumer<String> {
 
     public CommentInfoSource() {
         super("query1", new SimpleStringSchema(), initProperties());
+        this.setStartFromEarliest();
     }
 
     private static Properties initProperties() {

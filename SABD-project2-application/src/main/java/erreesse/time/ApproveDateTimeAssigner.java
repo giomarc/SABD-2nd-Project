@@ -1,17 +1,16 @@
 package erreesse.time;
 
 import erreesse.pojo.CommentInfoPOJO;
-import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor;
-import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor;
 
-public class ApproveDateTimeAssigner extends BoundedOutOfOrdernessTimestampExtractor<CommentInfoPOJO> {
+public class ApproveDateTimeAssigner extends AscendingTimestampExtractor<CommentInfoPOJO> {
 
     public ApproveDateTimeAssigner() {
-        super(Time.seconds(5));
+
     }
 
     @Override
-    public long extractTimestamp(CommentInfoPOJO commentInfoPOJO) {
+    public long extractAscendingTimestamp(CommentInfoPOJO commentInfoPOJO) {
         return commentInfoPOJO.getCreateDate();
     }
 }

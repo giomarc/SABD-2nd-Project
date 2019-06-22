@@ -48,7 +48,8 @@ services:
         environment:
             - JOB_MANAGER_RPC_ADDRESS=jobmanager
         volumes:
-            - ./flink_jar:/sabd/
+            - ./flink_jar:/sabd/jar
+            - ./result:/sabd/result
 
     taskmanager:
         image: flink
@@ -64,6 +65,11 @@ services:
         command: taskmanager
         environment:
             - JOB_MANAGER_RPC_ADDRESS=jobmanager
+        volumes:
+            - ./result:/sabd/result
+
+
+
 
     kafka-producer:
         image: wurstmeister/kafka
