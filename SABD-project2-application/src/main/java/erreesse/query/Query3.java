@@ -51,18 +51,18 @@ public class Query3 {
         SingleOutputStreamOperator<CommentInfoPOJO> directComment = originalStream.filter(cip -> cip.getDepth() == IS_DIRECT);
         SingleOutputStreamOperator<CommentInfoPOJO> indirectComment = originalStream.filter(cip -> cip.getDepth() != IS_DIRECT);
 
-        CoGroupedStreams<CommentInfoPOJO, CommentInfoPOJO>.Where<String>.EqualTo cogroupedStreams =
+        CoGroupedStreams<CommentInfoPOJO, CommentInfoPOJO>.Where<Long>.EqualTo cogroupedStreams =
                 directComment.coGroup(indirectComment)
-                .where((KeySelector<CommentInfoPOJO, String>) commentInfoPOJO -> commentInfoPOJO.getUserDisplayName())
-                .equalTo((KeySelector<CommentInfoPOJO, String>) commentInfoPOJO -> commentInfoPOJO.getParentUserDisplayName());
+                .where((KeySelector<CommentInfoPOJO, Long>) commentInfoPOJO -> commentInfoPOJO.getCommentID())
+                .equalTo((KeySelector<CommentInfoPOJO, Long>) commentInfoPOJO -> commentInfoPOJO.getInReplyTo());
 
         SingleOutputStreamOperator<String> hourStream = cogroupedStreams
                 .window(TumblingEventTimeWindows.of(Time.days(1)))
-                .apply(new CoGroupFunction<CommentInfoPOJO, CommentInfoPOJO, Tuple2<String,Double>>() {
+                .apply(new CoGroupFunction<CommentInfoPOJO, CommentInfoPOJO, Tuple2<Long,Double>>() {
                     @Override
                     public void coGroup(Iterable<CommentInfoPOJO> iterableA,
                                         Iterable<CommentInfoPOJO> iterableB,
-                                        Collector<Tuple2<String, Double>> out) throws Exception {
+                                        Collector<Tuple2<Long, Double>> out) throws Exception {
 
                         long totalLike = 0L;
                         for (CommentInfoPOJO singleCip : iterableA) {
@@ -78,33 +78,33 @@ public class Query3 {
 
                         CommentInfoPOJO nextA = null;
                         CommentInfoPOJO nextB = null;
-                        String key = null;
+                        Long key = null;
                         try {
                             nextA = iterableA.iterator().next();
                             nextB = iterableB.iterator().next();
                         } catch (NoSuchElementException e) {
 
                         }
-                        if (nextA != null) key = nextA.getUserDisplayName();
-                        if (nextB != null) key = nextB.getParentUserDisplayName();
+                        if (nextA != null) key = nextA.getUserID();
+                        if (nextB != null) key = nextB.getUserID();
 
                         out.collect(new Tuple2<>(key, finalResult));
 
                     }
                 })
                 .timeWindowAll(Time.days(1))
-                .apply(new AllWindowFunction<Tuple2<String, Double>, String, TimeWindow>() {
+                .apply(new AllWindowFunction<Tuple2<Long, Double>, String, TimeWindow>() {
                     @Override
                     public void apply(TimeWindow timeWindow,
-                                      Iterable<Tuple2<String, Double>> iterable,
+                                      Iterable<Tuple2<Long, Double>> iterable,
                                       Collector<String> out) throws Exception {
 
                         long timeStamp = timeWindow.getStart();
 
-                        Comparator<Tuple2<String, Double>> comparator = Comparator.comparing(t -> t._2);
-                        TreeSet<Tuple2<String, Double>> ordset = new TreeSet<>(comparator);
+                        Comparator<Tuple2<Long, Double>> comparator = Comparator.comparing(t -> t._2);
+                        TreeSet<Tuple2<Long, Double>> ordset = new TreeSet<>(comparator);
 
-                        for (Tuple2<String, Double> t2 : iterable) {
+                        for (Tuple2<Long, Double> t2 : iterable) {
                             ordset.add(t2);
                         }
 
@@ -114,8 +114,9 @@ public class Query3 {
                         long size = Math.min(10, ordset.size());
 
                         for (int i = 0; i < size; i++) {
-                            Tuple2<String, Double> ranked = ordset.pollLast();
-                            sb.append("," + ranked._1 + "," + ranked._2);
+                            Tuple2<Long, Double> ranked = ordset.pollLast();
+                            String ap = String.format(",%d,%.2f",ranked._1,ranked._2);
+                            sb.append(ap);
                         }
 
                         out.collect(sb.toString());
