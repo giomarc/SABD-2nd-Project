@@ -7,7 +7,8 @@ import erreesse.operators.keyby.KeyByArticleID;
 import erreesse.operators.keyby.KeyByWindowStart;
 import erreesse.operators.windowfunctions.ArticleCounterProcessWF;
 import erreesse.pojo.CommentInfoPOJO;
-import erreesse.time.CreateDateTimeAssigner;
+import erreesse.time.DateTimeAscendingAssigner;
+import erreesse.time.DateTimeOutOfOrderAssigner;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -26,7 +27,8 @@ public class Query1 {
         KeyedStream<CommentInfoPOJO, String> originalStream = env
                 .addSource(new CommentInfoSource())
                 .map(line -> CommentInfoPOJO.parseFromStringLine(line))
-                .assignTimestampsAndWatermarks(new CreateDateTimeAssigner())
+                .assignTimestampsAndWatermarks(new DateTimeAscendingAssigner())
+                //.assignTimestampsAndWatermarks(new DateTimeOutOfOrderAssigner())
                 .keyBy(new KeyByArticleID());
 
         DataStream<String> hourStream;
@@ -60,7 +62,7 @@ public class Query1 {
         weekStream.writeAsText("/sabd/result/query1/1week.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
 
         try {
-            env.execute("Test KafkaConnector");
+            env.execute("Query1");
         } catch (Exception e) {
             e.printStackTrace();
         }

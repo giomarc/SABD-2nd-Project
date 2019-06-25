@@ -20,9 +20,15 @@ public class CommentInfoPOJO implements Serializable {
     private boolean editorsSelection;
     private long inReplyTo;
 
-    private long recommendations;
+    private double recommendations;
     private String userDisplayName;
+    private String parentUserDisplayName;
     private long userID;
+
+    public void setRecommendations(double recommendations) {
+        if (this.editorsSelection)
+            this.recommendations = (1.1)*recommendations;
+    }
 
     public static CommentInfoPOJO parseFromStringLine(String line) {
         String[] tokens = line.split(",",-1);
@@ -38,14 +44,18 @@ public class CommentInfoPOJO implements Serializable {
                 cip.setCommentType(tokens[4]);
 
                 // createDateString
-                cip.setCreateDate(Long.parseLong(tokens[5])*1000L);
+                cip.setCreateDate(Long.parseLong(tokens[5]));
 
                 cip.setDepth(Integer.parseInt(tokens[6]));
                 cip.setEditorsSelection(Boolean.parseBoolean(tokens[7].toLowerCase()));
 
                 cip.setInReplyTo(Long.parseLong(tokens[8]));
-                cip.setRecommendations(Long.parseLong(tokens[10]));
+                cip.setParentUserDisplayName(tokens[9]);
+
+                cip.setRecommendations(Double.parseDouble(tokens[10]));
+
                 cip.setUserDisplayName(tokens[12]);
+
                 cip.setUserID(Long.parseLong(tokens[13]));
 
             } catch (NumberFormatException e) {
