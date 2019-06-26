@@ -1,35 +1,19 @@
 package erreesse.query;
 
 import erreesse.datasource.CommentInfoSource;
-import erreesse.operators.aggregator.CommentCounterAggregator;
-import erreesse.operators.apply.ConcatBuilderWF;
-import erreesse.operators.keyby.KeyByValue;
-import erreesse.operators.keyby.KeyByWindowStart2;
-import erreesse.operators.map.TwoHourMapFunction;
-import erreesse.operators.windowfunctions.CommentCounterProcessWF;
+import erreesse.operators.cogroup.ComputePopularUserCGF;
+import erreesse.operators.windowassigner.MonthWindowAssigner;
+import erreesse.operators.windowfunctions.ComputeMostPopularUserWF;
 import erreesse.pojo.CommentInfoPOJO;
 import erreesse.time.DateTimeAscendingAssigner;
-import org.apache.flink.api.common.functions.CoGroupFunction;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.CoGroupedStreams;
-import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.windowing.AllWindowFunction;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
-import org.apache.flink.streaming.api.windowing.triggers.EventTimeTrigger;
-import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
-import org.apache.flink.util.Collector;
-import scala.Tuple2;
-import scala.Tuple3;
-
-import java.util.Comparator;
-import java.util.NoSuchElementException;
-import java.util.TreeSet;
 
 public class Query3 {
     public static final int IS_DIRECT = 1;
@@ -51,84 +35,40 @@ public class Query3 {
         SingleOutputStreamOperator<CommentInfoPOJO> directComment = originalStream.filter(cip -> cip.getDepth() == IS_DIRECT);
         SingleOutputStreamOperator<CommentInfoPOJO> indirectComment = originalStream.filter(cip -> cip.getDepth() != IS_DIRECT);
 
+        SingleOutputStreamOperator<String> hourStream;
+        SingleOutputStreamOperator<String> weekStream;
+        SingleOutputStreamOperator<String> monthStream;
+
         CoGroupedStreams<CommentInfoPOJO, CommentInfoPOJO>.Where<Long>.EqualTo cogroupedStreams =
                 directComment.coGroup(indirectComment)
                 .where((KeySelector<CommentInfoPOJO, Long>) commentInfoPOJO -> commentInfoPOJO.getCommentID())
                 .equalTo((KeySelector<CommentInfoPOJO, Long>) commentInfoPOJO -> commentInfoPOJO.getInReplyTo());
 
-        SingleOutputStreamOperator<String> hourStream = cogroupedStreams
+        hourStream = cogroupedStreams
                 .window(TumblingEventTimeWindows.of(Time.days(1)))
-                .apply(new CoGroupFunction<CommentInfoPOJO, CommentInfoPOJO, Tuple2<Long,Double>>() {
-                    @Override
-                    public void coGroup(Iterable<CommentInfoPOJO> iterableA,
-                                        Iterable<CommentInfoPOJO> iterableB,
-                                        Collector<Tuple2<Long, Double>> out) throws Exception {
-
-                        long totalLike = 0L;
-                        for (CommentInfoPOJO singleCip : iterableA) {
-                            totalLike += singleCip.getRecommendations();
-                        }
-
-                        long b = 0L;
-                        for (CommentInfoPOJO singleCip : iterableB) {
-                            b++;
-                        }
-
-                        double finalResult = 0.3 * totalLike + 0.7 * b;
-
-                        CommentInfoPOJO nextA = null;
-                        CommentInfoPOJO nextB = null;
-                        Long key = null;
-                        try {
-                            nextA = iterableA.iterator().next();
-                            nextB = iterableB.iterator().next();
-                        } catch (NoSuchElementException e) {
-
-                        }
-                        if (nextA != null) key = nextA.getUserID();
-                        if (nextB != null) key = nextB.getUserID();
-
-                        out.collect(new Tuple2<>(key, finalResult));
-
-                    }
-                })
+                .apply(new ComputePopularUserCGF())
                 .timeWindowAll(Time.days(1))
-                .apply(new AllWindowFunction<Tuple2<Long, Double>, String, TimeWindow>() {
-                    @Override
-                    public void apply(TimeWindow timeWindow,
-                                      Iterable<Tuple2<Long, Double>> iterable,
-                                      Collector<String> out) throws Exception {
+                .apply(new ComputeMostPopularUserWF());
 
-                        long timeStamp = timeWindow.getStart();
+        weekStream = cogroupedStreams
+                .window(TumblingEventTimeWindows.of(Time.days(7)))
+                .apply(new ComputePopularUserCGF())
+                .timeWindowAll(Time.days(7))
+                .apply(new ComputeMostPopularUserWF());
 
-                        Comparator<Tuple2<Long, Double>> comparator = Comparator.comparing(t -> t._2);
-                        TreeSet<Tuple2<Long, Double>> ordset = new TreeSet<>(comparator);
+        monthStream = cogroupedStreams
+                .window(new MonthWindowAssigner())
+                .apply(new ComputePopularUserCGF())
+                .windowAll(new MonthWindowAssigner())
+                .apply(new ComputeMostPopularUserWF());
 
-                        for (Tuple2<Long, Double> t2 : iterable) {
-                            ordset.add(t2);
-                        }
-
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(timeStamp);
-
-                        long size = Math.min(10, ordset.size());
-
-                        for (int i = 0; i < size; i++) {
-                            Tuple2<Long, Double> ranked = ordset.pollLast();
-                            String ap = String.format(",%d,%.2f",ranked._1,ranked._2);
-                            sb.append(ap);
-                        }
-
-                        out.collect(sb.toString());
-
-
-                    }
-                });
 
         hourStream.writeAsText("/sabd/result/query3/1day.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
+        weekStream.writeAsText("/sabd/result/query3/1week.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
+        monthStream.writeAsText("/sabd/result/query3/1month.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
 
         try {
-            env.execute("Query2");
+            env.execute("Query3");
         } catch (Exception e) {
             e.printStackTrace();
         }

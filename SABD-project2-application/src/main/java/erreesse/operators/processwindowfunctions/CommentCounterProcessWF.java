@@ -1,4 +1,4 @@
-package erreesse.operators.windowfunctions;
+package erreesse.operators.processwindowfunctions;
 
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
@@ -20,6 +20,8 @@ public class CommentCounterProcessWF extends ProcessWindowFunction<Long, Tuple3<
             Context context,
             Iterable<Long> elements,
             Collector<Tuple3<Long, Long, Integer>> out) throws Exception {
+
+
 
         long timestamp = context.window().getStart();
         long count = elements.iterator().next();

@@ -5,12 +5,12 @@ import org.apache.flink.api.common.functions.AggregateFunction;
 public class CommentCounterAggregator implements AggregateFunction<Integer,Long,Long> {
     @Override
     public Long createAccumulator() {
-        return 1L;
+        return 0L;
     }
 
     @Override
     public Long add(Integer integer, Long aLong) {
-        return aLong + integer;
+        return aLong + 1L;
     }
 
     @Override

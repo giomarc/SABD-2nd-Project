@@ -6,7 +6,8 @@ import erreesse.operators.apply.ConcatBuilderWF;
 import erreesse.operators.keyby.KeyByValue;
 import erreesse.operators.keyby.KeyByWindowStart2;
 import erreesse.operators.map.TwoHourMapFunction;
-import erreesse.operators.windowfunctions.CommentCounterProcessWF;
+import erreesse.operators.windowassigner.MonthWindowAssigner;
+import erreesse.operators.processwindowfunctions.CommentCounterProcessWF;
 import erreesse.pojo.CommentInfoPOJO;
 import erreesse.time.DateTimeAscendingAssigner;
 import org.apache.flink.core.fs.FileSystem;
@@ -31,10 +32,10 @@ public class Query2 {
                 .addSource(new CommentInfoSource())
                 .map(line -> CommentInfoPOJO.parseFromStringLine(line))
                 // filtro solo i commenti diretti
-                .filter(cip -> cip.getDepth() == IS_DIRECT)
+                //.filter(cip -> cip.getDepth() == IS_DIRECT)
+                .filter(cip -> cip.getCommentType().equals("comment"))
                 .assignTimestampsAndWatermarks(new DateTimeAscendingAssigner())
                 .map(new TwoHourMapFunction())
-                //.assignTimestampsAndWatermarks(new DateTimeOutOfOrderAssigner())
                 .keyBy(new KeyByValue());
 
         DataStream<String> dayStream;
@@ -57,13 +58,13 @@ public class Query2 {
                 .timeWindow(Time.days(7))
                 .apply(new ConcatBuilderWF());
 
-        // TODO creare finestra da triggerare a mano quando scatta il mese
         monthStream = originalStream
-                .timeWindow(Time.days(30))
+                .window(new MonthWindowAssigner())
                 .aggregate(new CommentCounterAggregator(), new CommentCounterProcessWF())
                 .keyBy(new KeyByWindowStart2())
-                .timeWindow(Time.days(30))
+                .window(new MonthWindowAssigner())
                 .apply(new ConcatBuilderWF());
+
 
         dayStream.writeAsText("/sabd/result/query2/24hour.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
         weekStream.writeAsText("/sabd/result/query2/7days.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);

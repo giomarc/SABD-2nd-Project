@@ -9,7 +9,7 @@ import org.apache.flink.api.common.functions.AggregateFunction;
 public class ArticleCounterAggregator implements AggregateFunction<CommentInfoPOJO,Long,Long> {
     @Override
     public Long createAccumulator() {
-        return 1L;
+        return 0L;
     }
 
     @Override
