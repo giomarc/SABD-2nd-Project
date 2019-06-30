@@ -4,6 +4,8 @@ import erreesse.pojo.CommentInfoPOJO;
 import org.apache.flink.api.common.functions.RichCoGroupFunction;
 import org.apache.flink.api.common.state.MapState;
 import org.apache.flink.api.common.state.MapStateDescriptor;
+import org.apache.flink.api.common.state.StateTtlConfig;
+import org.apache.flink.api.common.time.Time;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.util.Collector;
 import scala.Tuple2;
@@ -21,6 +23,14 @@ public class ComputePopularUserCGF extends RichCoGroupFunction<CommentInfoPOJO, 
                         Long.class,
                         Long.class
                         ); // default value of the state, if nothing was set
+
+        StateTtlConfig ttlConfig = StateTtlConfig
+                .newBuilder(Time.days(7))
+                .setUpdateType(StateTtlConfig.UpdateType.OnReadAndWrite)
+                .setStateVisibility(StateTtlConfig.StateVisibility.ReturnExpiredIfNotCleanedUp)
+                .build();
+
+        descriptor.enableTimeToLive(ttlConfig);
 
         mappaCommentiUtenti = getRuntimeContext().getMapState(descriptor);
 
