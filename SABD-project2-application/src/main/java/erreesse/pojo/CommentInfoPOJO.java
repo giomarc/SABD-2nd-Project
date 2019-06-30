@@ -25,16 +25,23 @@ public class CommentInfoPOJO implements Serializable {
     private String parentUserDisplayName;
     private long userID;
 
-    public void setRecommendations(double recommendations) {
-        if (this.editorsSelection)
-            this.recommendations = (1.1)*recommendations;
+    public void setRecommendations(Double rec) {
+        if (editorsSelection) {
+            recommendations = (1.1) * rec;
+        } else {
+            recommendations = rec;
+        }
+    }
+
+    public boolean isDirect() {
+        return depth == 1;
     }
 
     public static CommentInfoPOJO parseFromStringLine(String line) {
         String[] tokens = line.split(",",-1);
 
         CommentInfoPOJO cip = null;
-        if (tokens.length>=14) {
+        if (tokens.length>=15) {
             try {
                 cip = new CommentInfoPOJO();
                 cip.setApprovedDate(Long.parseLong(tokens[0]));
@@ -59,7 +66,7 @@ public class CommentInfoPOJO implements Serializable {
                 cip.setUserID(Long.parseLong(tokens[13]));
 
             } catch (NumberFormatException e) {
-                System.err.println(e.getMessage());
+                //System.err.println(e.getMessage());
             }
         }
 

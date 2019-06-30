@@ -3,6 +3,7 @@ package erreesse.query;
 import erreesse.datasource.CommentInfoSource;
 import erreesse.operators.aggregator.CommentCounterAggregator;
 import erreesse.operators.apply.ConcatBuilderWF;
+import erreesse.operators.filter.CommentInfoPOJOValidator;
 import erreesse.operators.keyby.KeyByValue;
 import erreesse.operators.keyby.KeyByWindowStart2;
 import erreesse.operators.map.TwoHourMapFunction;
@@ -31,9 +32,8 @@ public class Query2 {
         KeyedStream<Integer, Integer> originalStream = env
                 .addSource(new CommentInfoSource())
                 .map(line -> CommentInfoPOJO.parseFromStringLine(line))
-                // filtro solo i commenti diretti
-                //.filter(cip -> cip.getDepth() == IS_DIRECT)
-                .filter(cip -> cip.getCommentType().equals("comment"))
+                .filter(new CommentInfoPOJOValidator())
+                .filter(cip -> cip.isDirect())
                 .assignTimestampsAndWatermarks(new DateTimeAscendingAssigner())
                 .map(new TwoHourMapFunction())
                 .keyBy(new KeyByValue());

@@ -3,6 +3,7 @@ package erreesse.query;
 import erreesse.datasource.CommentInfoSource;
 import erreesse.operators.aggregator.ArticleCounterAggregator;
 import erreesse.operators.apply.RankingWF;
+import erreesse.operators.filter.CommentInfoPOJOValidator;
 import erreesse.operators.keyby.KeyByArticleID;
 import erreesse.operators.keyby.KeyByWindowStart;
 import erreesse.operators.processwindowfunctions.ArticleCounterProcessWF;
@@ -26,6 +27,7 @@ public class Query1 {
         KeyedStream<CommentInfoPOJO, String> originalStream = env
                 .addSource(new CommentInfoSource())
                 .map(line -> CommentInfoPOJO.parseFromStringLine(line))
+                .filter(new CommentInfoPOJOValidator())
                 .assignTimestampsAndWatermarks(new DateTimeAscendingAssigner())
                 //.assignTimestampsAndWatermarks(new DateTimeOutOfOrderAssigner())
                 .keyBy(new KeyByArticleID());
