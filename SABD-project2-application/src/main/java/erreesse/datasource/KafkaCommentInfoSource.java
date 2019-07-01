@@ -5,9 +5,9 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 
 import java.util.Properties;
 
-public class CommentInfoSource extends FlinkKafkaConsumer<String> {
+public class KafkaCommentInfoSource extends FlinkKafkaConsumer<String> {
 
-    public CommentInfoSource() {
+    public KafkaCommentInfoSource() {
         super("query1", new SimpleStringSchema(), initProperties());
         this.setStartFromEarliest();
     }

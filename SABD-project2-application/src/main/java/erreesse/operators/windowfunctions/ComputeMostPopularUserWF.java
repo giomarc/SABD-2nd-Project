@@ -6,7 +6,7 @@ import org.apache.flink.util.Collector;
 import scala.Tuple2;
 
 import java.util.Comparator;
-import java.util.TreeSet;
+import java.util.PriorityQueue;
 
 public class ComputeMostPopularUserWF implements AllWindowFunction<Tuple2<Long, Double>, String, TimeWindow> {
     @Override
@@ -16,8 +16,10 @@ public class ComputeMostPopularUserWF implements AllWindowFunction<Tuple2<Long, 
 
         long timeStamp = timeWindow.getStart();
 
-        Comparator<Tuple2<Long, Double>> comparator = Comparator.comparing(t -> t._2);
-        TreeSet<Tuple2<Long, Double>> ordset = new TreeSet<>(comparator);
+        final int QUEUE_SIZE = 10;
+        Comparator<Tuple2<Long, Double>> comparator = (t1, t2) -> (t2._2.compareTo(t1._2));
+        PriorityQueue<Tuple2<Long, Double>> ordset = new PriorityQueue<>(QUEUE_SIZE,comparator);
+
 
         for (Tuple2<Long, Double> t2 : iterable) {
             ordset.add(t2);
@@ -29,7 +31,7 @@ public class ComputeMostPopularUserWF implements AllWindowFunction<Tuple2<Long, 
         long size = Math.min(10, ordset.size());
 
         for (int i = 0; i < size; i++) {
-            Tuple2<Long, Double> ranked = ordset.pollLast();
+            Tuple2<Long, Double> ranked = ordset.poll();
             String ap = String.format(",%d,%.2f",ranked._1,ranked._2);
             sb.append(ap);
         }

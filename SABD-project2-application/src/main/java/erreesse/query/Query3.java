@@ -1,6 +1,6 @@
 package erreesse.query;
 
-import erreesse.datasource.CommentInfoSource;
+import erreesse.datasource.KafkaCommentInfoSource;
 import erreesse.operators.cogroup.ComputePopularUserCGF;
 import erreesse.operators.filter.CommentInfoPOJOValidator;
 import erreesse.operators.windowassigner.MonthWindowAssigner;
@@ -25,9 +25,8 @@ public class Query3 {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
-
         SingleOutputStreamOperator<CommentInfoPOJO> originalStream = env
-                .addSource(new CommentInfoSource())
+                .addSource(new KafkaCommentInfoSource())
                 .map(line -> CommentInfoPOJO.parseFromStringLine(line))
                 .filter(new CommentInfoPOJOValidator())
                 .assignTimestampsAndWatermarks(new DateTimeAscendingAssigner());

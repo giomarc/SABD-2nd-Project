@@ -1,6 +1,6 @@
 package erreesse.query;
 
-import erreesse.datasource.CommentInfoSource;
+import erreesse.datasource.KafkaCommentInfoSource;
 import erreesse.operators.aggregator.CommentCounterAggregator;
 import erreesse.operators.apply.ConcatBuilderWF;
 import erreesse.operators.filter.CommentInfoPOJOValidator;
@@ -30,7 +30,7 @@ public class Query2 {
 
         // KeyedStream<V, K>
         KeyedStream<Integer, Integer> originalStream = env
-                .addSource(new CommentInfoSource())
+                .addSource(new KafkaCommentInfoSource())
                 .map(line -> CommentInfoPOJO.parseFromStringLine(line))
                 .filter(new CommentInfoPOJOValidator())
                 .filter(cip -> cip.isDirect())

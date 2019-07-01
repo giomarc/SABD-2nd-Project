@@ -1,6 +1,6 @@
 package erreesse.query;
 
-import erreesse.datasource.CommentInfoSource;
+import erreesse.datasource.KafkaCommentInfoSource;
 import erreesse.operators.aggregator.ArticleCounterAggregator;
 import erreesse.operators.apply.RankingWF;
 import erreesse.operators.filter.CommentInfoPOJOValidator;
@@ -25,7 +25,7 @@ public class Query1 {
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         KeyedStream<CommentInfoPOJO, String> originalStream = env
-                .addSource(new CommentInfoSource())
+                .addSource(new KafkaCommentInfoSource())
                 .map(line -> CommentInfoPOJO.parseFromStringLine(line))
                 .filter(new CommentInfoPOJOValidator())
                 .assignTimestampsAndWatermarks(new DateTimeAscendingAssigner())
@@ -42,21 +42,21 @@ public class Query1 {
                 .aggregate(new ArticleCounterAggregator(), new ArticleCounterProcessWF())
                 .keyBy(new KeyByWindowStart())
                 .timeWindow(Time.hours(1))
-                .apply(new RankingWF());
+                .apply(new RankingWF()).setParallelism(1);
 
         dayStream = originalStream
                 .timeWindow(Time.days(1))
                 .aggregate(new ArticleCounterAggregator(), new ArticleCounterProcessWF())
                 .keyBy(new KeyByWindowStart())
                 .timeWindow(Time.days(1))
-                .apply(new RankingWF());
+                .apply(new RankingWF()).setParallelism(1);
 
         weekStream = originalStream
                 .timeWindow(Time.days(7))
                 .aggregate(new ArticleCounterAggregator(), new ArticleCounterProcessWF())
                 .keyBy(new KeyByWindowStart())
                 .timeWindow(Time.days(7))
-                .apply(new RankingWF());
+                .apply(new RankingWF()).setParallelism(1);
 
         hourStream.writeAsText("/sabd/result/query1/1hour.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
         dayStream.writeAsText("/sabd/result/query1/1day.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);

@@ -23,6 +23,7 @@
 
     <modules>
         <module>SABD-project2-application</module>
+        <module>datasource-simulator</module>
     </modules>
 
 </project>

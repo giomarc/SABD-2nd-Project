@@ -45,8 +45,8 @@ services:
             - app_network
         ports:
             - "8081:8081"
-        depends_on:
-            - master
+        # depends_on:
+        #     - master
         command: jobmanager
         environment:
             - JOB_MANAGER_RPC_ADDRESS=jobmanager
@@ -64,11 +64,11 @@ services:
         expose:
             - "6121"
             - "6122"
-            - "5005" # remote intellij debug
-        ports:
-            - "5005:5005" # remote intellij debug
-        depends_on:
-            - master
+            #- "5005" # remote intellij debug
+        #ports:
+            #- "5005:5005" # remote intellij debug
+        # depends_on:
+        #     - master
         depends_on:
             - jobmanager
         command: taskmanager
@@ -85,6 +85,10 @@ services:
         hostname: kafka-producer
         networks:
             - app_network
+        expose:
+            - "5005" # remote intellij debug
+        ports:
+            - "5005:5005" # remote intellij debug
         depends_on:
             - zookeeper
             - kafka
@@ -99,66 +103,66 @@ services:
         volumes:
             - ./dataset:/sabd/dataset
 
-    master:
-        build:
-            context: ../docker-images/hdfs
-        image: erreesse/hdfs
-        container_name: master
-        hostname: master
-        networks:
-            - app_network
-        ports:
-            - "9870:9870" # hdfs ui
-            - "54310:54310" # hdfs 
-        stdin_open: true
-        tty: true
-        environment: 
-            - ISMASTER=1
+    # master:
+    #     build:
+    #         context: ../docker-images/hdfs
+    #     image: erreesse/hdfs
+    #     container_name: master
+    #     hostname: master
+    #     networks:
+    #         - app_network
+    #     ports:
+    #         - "9870:9870" # hdfs ui
+    #         - "54310:54310" # hdfs 
+    #     stdin_open: true
+    #     tty: true
+    #     environment: 
+    #         - ISMASTER=1
 
-    slave1:
-        image: erreesse/hdfs
-        container_name: slave1
-        hostname: slave1
-        networks:
-            - app_network
-        ports:
-            - "9864:9864"
-        depends_on:
-            - master
-        stdin_open: true
-        tty: true
-        environment: 
-            - ISMASTER=0
+    # slave1:
+    #     image: erreesse/hdfs
+    #     container_name: slave1
+    #     hostname: slave1
+    #     networks:
+    #         - app_network
+    #     ports:
+    #         - "9864:9864"
+    #     depends_on:
+    #         - master
+    #     stdin_open: true
+    #     tty: true
+    #     environment: 
+    #         - ISMASTER=0
 
   
-    slave2:
-        image: erreesse/hdfs
-        container_name: slave2
-        hostname: slave2
-        networks:
-            - app_network
-        ports:
-            - "9863:9864"
-        depends_on:
-            - master
-        stdin_open: true
-        tty: true
-        environment: 
-            - ISMASTER=0
+    # slave2:
+    #     image: erreesse/hdfs
+    #     container_name: slave2
+    #     hostname: slave2
+    #     networks:
+    #         - app_network
+    #     ports:
+    #         - "9863:9864"
+    #     depends_on:
+    #         - master
+    #     stdin_open: true
+    #     tty: true
+    #     environment: 
+    #         - ISMASTER=0
 
 
-    slave3:
-        image: erreesse/hdfs
-        container_name: slave3
-        hostname: slave3
-        networks:
-            - app_network
-        ports:
-            - "9862:9864"
-        depends_on:
-            - master
-        stdin_open: true
-        tty: true
-        environment: 
-            - ISMASTER=0
+    # slave3:
+    #     image: erreesse/hdfs
+    #     container_name: slave3
+    #     hostname: slave3
+    #     networks:
+    #         - app_network
+    #     ports:
+    #         - "9862:9864"
+    #     depends_on:
+    #         - master
+    #     stdin_open: true
+    #     tty: true
+    #     environment: 
+    #         - ISMASTER=0
   
