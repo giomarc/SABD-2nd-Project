@@ -6,8 +6,11 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 @Data
-@NoArgsConstructor
 public class CommentInfoPOJO implements Serializable {
+
+    public CommentInfoPOJO() {
+        processingTime = System.nanoTime();
+    }
 
     private long approvedDate;
     private String articleID;
@@ -32,6 +35,8 @@ public class CommentInfoPOJO implements Serializable {
             recommendations = rec;
         }
     }
+
+    public long processingTime;
 
     public boolean isDirect() {
         return depth == 1;

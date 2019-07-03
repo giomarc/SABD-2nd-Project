@@ -1,5 +1,6 @@
 package erreesse.query;
 
+import erreesse.datasink.KafkaCommentInfoSink;
 import erreesse.datasource.KafkaCommentInfoSource;
 import erreesse.executionenvironment.RSExecutionEnvironment;
 import erreesse.operators.aggregator.ArticleCounterAggregator;
@@ -10,7 +11,6 @@ import erreesse.operators.keyby.KeyByWindowStart;
 import erreesse.operators.processwindowfunctions.ArticleCounterProcessWF;
 import erreesse.pojo.CommentInfoPOJO;
 import erreesse.time.DateTimeAscendingAssigner;
-import lombok.ToString;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
@@ -57,6 +57,11 @@ public class Query1 {
                 .keyBy(new KeyByWindowStart())
                 .timeWindow(Time.days(7))
                 .apply(new RankingWF());
+
+
+        hourStream
+                .union(dayStream,weekStream)
+                .addSink(new KafkaCommentInfoSink("query1-output"));
 
 
         hourStream.writeAsText("/sabd/result/query1/1hour.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);

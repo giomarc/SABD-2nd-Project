@@ -68,7 +68,7 @@ public class DataSourceSimulator {
 
             long deltaTimeStamp = computeDelta(firstTimestamp,curTimestamp);
 
-            System.out.println("Waiting for "+deltaTimeStamp+" millisecs...\n");
+            //System.out.println("Waiting for "+deltaTimeStamp+" millisecs...\n");
             if (deltaTimeStamp > 0)
                 addDelay(deltaTimeStamp);
 
