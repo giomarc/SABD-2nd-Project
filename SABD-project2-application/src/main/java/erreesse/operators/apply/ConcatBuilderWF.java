@@ -17,7 +17,7 @@ import java.util.TreeSet;
  * KEY
  * TW
  * */
-
+@Deprecated
 public class ConcatBuilderWF implements WindowFunction<Tuple3<Long,Long,Integer>,String,Long, TimeWindow> {
     @Override
     public void apply(Long key,

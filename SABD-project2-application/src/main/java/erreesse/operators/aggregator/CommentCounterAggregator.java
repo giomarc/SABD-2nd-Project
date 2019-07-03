@@ -2,6 +2,7 @@ package erreesse.operators.aggregator;
 
 import org.apache.flink.api.common.functions.AggregateFunction;
 
+@Deprecated
 public class CommentCounterAggregator implements AggregateFunction<Integer,Long,Long> {
     @Override
     public Long createAccumulator() {

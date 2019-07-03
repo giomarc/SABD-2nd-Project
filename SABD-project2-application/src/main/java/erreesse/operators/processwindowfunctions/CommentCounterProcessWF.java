@@ -13,6 +13,7 @@ import scala.Tuple3;
  * TW
  *
  * */
+@Deprecated
 public class CommentCounterProcessWF extends ProcessWindowFunction<Long, Tuple3<Long,Long,Integer>,Integer, TimeWindow> {
     @Override
     public void process(

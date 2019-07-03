@@ -7,6 +7,7 @@ import scala.Tuple3;
 /*
 * IN -> Tuple2<TimestampWindowStart,Counter>
 * */
+@Deprecated
 public class KeyByWindowStart2 implements KeySelector<Tuple3<Long,Long,Integer>,Long>  {
     @Override
     public Long getKey(Tuple3<Long, Long,Integer> t3) throws Exception {

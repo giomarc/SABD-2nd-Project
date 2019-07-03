@@ -10,9 +10,8 @@ import erreesse.operators.keyby.KeyByWindowStart;
 import erreesse.operators.processwindowfunctions.ArticleCounterProcessWF;
 import erreesse.pojo.CommentInfoPOJO;
 import erreesse.time.DateTimeAscendingAssigner;
+import lombok.ToString;
 import org.apache.flink.core.fs.FileSystem;
-import org.apache.flink.runtime.state.filesystem.FsStateBackend;
-import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -43,21 +42,22 @@ public class Query1 {
                 .aggregate(new ArticleCounterAggregator(), new ArticleCounterProcessWF())
                 .keyBy(new KeyByWindowStart())
                 .timeWindow(Time.hours(1))
-                .apply(new RankingWF()).setParallelism(1);
+                .apply(new RankingWF());
 
         dayStream = originalStream
                 .timeWindow(Time.days(1))
                 .aggregate(new ArticleCounterAggregator(), new ArticleCounterProcessWF())
                 .keyBy(new KeyByWindowStart())
                 .timeWindow(Time.days(1))
-                .apply(new RankingWF()).setParallelism(1);
+                .apply(new RankingWF());
 
         weekStream = originalStream
                 .timeWindow(Time.days(7))
                 .aggregate(new ArticleCounterAggregator(), new ArticleCounterProcessWF())
                 .keyBy(new KeyByWindowStart())
                 .timeWindow(Time.days(7))
-                .apply(new RankingWF()).setParallelism(1);
+                .apply(new RankingWF());
+
 
         hourStream.writeAsText("/sabd/result/query1/1hour.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
         dayStream.writeAsText("/sabd/result/query1/1day.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
