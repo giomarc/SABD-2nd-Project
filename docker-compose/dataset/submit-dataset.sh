@@ -1,6 +1,33 @@
 #!/bin/bash
-#$KAFKA_HOME/bin/kafka-console-producer.sh --broker-list kafka:9092 --topic query1 < /sabd/dataset/Comments_jan-apr2018.csv
+PROGNAME=$0
 
-java \
--agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=n \
--cp datasource-simulator-1.0-SNAPSHOT.jar erreesse.StartSimulation Comments_jan-apr2018.csv 10000000
+usage() {
+  cat << EOF >&2
+Usage: $PROGNAME -f <filename> -s <speedfactor>
+
+-f : filename of dataset to inject
+-s : speed factor for accelerate the ingestion
+     1:   real time
+     10:  10 times faster
+     100: 100 times faster
+EOF
+  exit 1
+}
+
+while getopts f:s:r o; do
+  case $o in
+    (f) filename=$OPTARG;;
+    (s) speedfactor=$OPTARG;;
+    (*) usage
+  esac
+done
+shift "$((OPTIND - 1))"
+echo Remaining arguments: "$@"
+
+echo "filename: "$filename;
+echo "speedfactor: "$speedfactor;
+
+start_ingestion() {
+  java -cp datasource-simulator-1.0-SNAPSHOT.jar erreesse.StartSimulation $filename $speedfactor
+}
+start_ingestion

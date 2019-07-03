@@ -1,6 +1,7 @@
 package erreesse.query;
 
 import erreesse.datasource.KafkaCommentInfoSource;
+import erreesse.executionenvironment.RSExecutionEnvironment;
 import erreesse.operators.cogroup.ComputePopularUserCGF;
 import erreesse.operators.filter.CommentInfoPOJOValidator;
 import erreesse.operators.windowassigner.MonthWindowAssigner;
@@ -9,7 +10,6 @@ import erreesse.pojo.CommentInfoPOJO;
 import erreesse.time.DateTimeAscendingAssigner;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.core.fs.FileSystem;
-import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.CoGroupedStreams;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -22,8 +22,7 @@ public class Query3 {
 
 
         // set up environment
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+        StreamExecutionEnvironment env = RSExecutionEnvironment.getExecutionEnvironment();
 
         SingleOutputStreamOperator<CommentInfoPOJO> originalStream = env
                 .addSource(new KafkaCommentInfoSource())

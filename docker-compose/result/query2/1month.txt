@@ -1,3 +1,0 @@
-1514764800000,fascia:0|count:9648,fascia:1|count:9812,fascia:2|count:6529,fascia:3|count:3354,fascia:4|count:2357,fascia:5|count:5226,fascia:6|count:14838,fascia:7|count:23993,fascia:8|count:21375,fascia:9|count:18350,fascia:10|count:14528,fascia:11|count:11651
-1517443200000,fascia:0|count:10048,fascia:1|count:9813,fascia:2|count:7330,fascia:3|count:4000,fascia:4|count:2650,fascia:5|count:6052,fascia:6|count:17674,fascia:7|count:25822,fascia:8|count:22689,fascia:9|count:17325,fascia:10|count:15747,fascia:11|count:13272
-1519862400000,fascia:0|count:154,fascia:1|count:120,fascia:2|count:61,fascia:3|count:34,fascia:4|count:22,fascia:5|count:25,fascia:6|count:105,fascia:7|count:195,fascia:8|count:199,fascia:9|count:197,fascia:10|count:118,fascia:11|count:77

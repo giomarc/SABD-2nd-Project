@@ -1,0 +1,20 @@
+Domande Da porre:
+
+-	A che serve l'approved date time? E' da prendere in considerazione?
+
+-	replay con speed factor?
+
+-	3a query
+	Nel caso in cui i commenti indiretti appartengano ad una finestra temporale successiva, vanno considerati? 
+	Se si, dobbiamo mantere uno stato per l'associazione commentID-UserID. Questo stato può eventualmente essere "potato" dalla testa dopo un certo periodo di tempo?
+
+
+-	come prendere ste benedette metriche.
+	possibilità:
+		- possiamo usare la classe histogram o la classe meter dell'interfaccia metricgroup di flink?
+			cosi possiamo avere metriche custom nella dashboard di flink
+
+		- override the processLatencyMarker() method nei vari operatori?
+
+
+-	dobbiamo abilitare i checkpoint per il fault tolerance?

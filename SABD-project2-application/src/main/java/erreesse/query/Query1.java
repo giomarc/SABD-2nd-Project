@@ -1,6 +1,7 @@
 package erreesse.query;
 
 import erreesse.datasource.KafkaCommentInfoSource;
+import erreesse.executionenvironment.RSExecutionEnvironment;
 import erreesse.operators.aggregator.ArticleCounterAggregator;
 import erreesse.operators.apply.RankingWF;
 import erreesse.operators.filter.CommentInfoPOJOValidator;
@@ -10,6 +11,7 @@ import erreesse.operators.processwindowfunctions.ArticleCounterProcessWF;
 import erreesse.pojo.CommentInfoPOJO;
 import erreesse.time.DateTimeAscendingAssigner;
 import org.apache.flink.core.fs.FileSystem;
+import org.apache.flink.runtime.state.filesystem.FsStateBackend;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
@@ -21,8 +23,7 @@ public class Query1 {
     public static void main(String[] args) {
 
         // set up environment
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+        StreamExecutionEnvironment env = RSExecutionEnvironment.getExecutionEnvironment();
 
         KeyedStream<CommentInfoPOJO, String> originalStream = env
                 .addSource(new KafkaCommentInfoSource())
