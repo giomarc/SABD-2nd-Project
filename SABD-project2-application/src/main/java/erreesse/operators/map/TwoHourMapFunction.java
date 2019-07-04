@@ -10,6 +10,8 @@ import java.time.ZoneOffset;
 public class TwoHourMapFunction implements MapFunction<CommentInfoPOJO, Integer> {
     @Override
     public Integer map(CommentInfoPOJO commentInfoPOJO) throws Exception {
+
+
         return PojoHelper.getFascia(commentInfoPOJO);
     }
 

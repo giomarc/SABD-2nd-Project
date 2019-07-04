@@ -9,7 +9,7 @@ public class KafkaCommentInfoSource extends FlinkKafkaConsumer<String> {
 
     public KafkaCommentInfoSource() {
         super("query1", new SimpleStringSchema(), initProperties());
-        this.setStartFromEarliest();
+        //this.setStartFromEarliest();
     }
 
     private static Properties initProperties() {

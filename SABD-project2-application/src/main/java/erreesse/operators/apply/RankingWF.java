@@ -1,45 +1,37 @@
 package erreesse.operators.apply;
 
+import erreesse.metrics.LatencyTuple3;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.dropwizard.metrics.DropwizardMeterWrapper;
-import org.apache.flink.metrics.Meter;
+import org.apache.flink.metrics.Gauge;
 import org.apache.flink.streaming.api.functions.windowing.RichWindowFunction;
-import org.apache.flink.streaming.api.functions.windowing.WindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 import scala.Tuple2;
-import scala.Tuple3;
-import scala.Tuple4;
 
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.PriorityQueue;
-import java.util.TreeSet;
 
 /*
-* IN --> Tuple4<Long,String,Long,Long> --> <Timestamp,ArticleID,Count,lastPTinWindow>
+* IN --> Tuple3<Long,String,Long> --> <Timestamp,ArticleID,Count>
 * OUT
 * KEY
 * TW
 * */
-public class RankingWF extends RichWindowFunction<Tuple4<Long, String, Long, Long>, String, Long, TimeWindow> {
+public class RankingWF extends RichWindowFunction<LatencyTuple3<Long, String, Long>, String, Long, TimeWindow> {
 
-    private transient Meter meter;
+    private transient long windowLatency = 0;
 
     @Override
     public void open(Configuration config) {
-        com.codahale.metrics.Meter dropwizardMeter = new com.codahale.metrics.Meter();
-
-        this.meter = getRuntimeContext()
+        getRuntimeContext()
                 .getMetricGroup()
-                .meter("EsseErreMeterRankingWF", new DropwizardMeterWrapper(dropwizardMeter));
+                .gauge("ErreEsseLatencyQuery1", (Gauge<Long>) () -> windowLatency);
     }
 
     @Override
     public void apply(Long key,
                       TimeWindow timeWindow,
-                      Iterable<Tuple4<Long, String, Long,Long>> iterable,
+                      Iterable<LatencyTuple3<Long,String,Long>> iterable,
                       Collector<String> out) throws Exception {
 
         long lastPTinAllWindow = 0;
@@ -49,19 +41,19 @@ public class RankingWF extends RichWindowFunction<Tuple4<Long, String, Long, Lon
         Comparator<Tuple2<String,Long>> comparator = (t1, t2) -> (t2._2.compareTo(t1._2));
         PriorityQueue<Tuple2<String,Long>> ordset = new PriorityQueue<>(QUEUE_SIZE,comparator);
 
-        long eventCounter = 0;
-        for (Tuple4<Long, String, Long,Long> t4 : iterable) {
-            eventCounter++;
-            long lastPTinWindow = t4._4();
+        for (LatencyTuple3<Long,String,Long> t3 : iterable) {
+
+            // find max timestamp
+            long lastPTinWindow = t3.getStartTime();
             lastPTinAllWindow = Math.max(lastPTinAllWindow,lastPTinWindow);
 
-            ordset.add(new Tuple2<>(t4._2(),t4._3()));
+            ordset.add(new Tuple2<>(t3._2(),t3._3()));
         }
-
-        meter.markEvent(eventCounter);
 
         StringBuilder sb = new StringBuilder();
         sb.append(key);
+
+        computeQueryLatency(lastPTinAllWindow);
 
         long size = Math.min(QUEUE_SIZE, ordset.size());
 
@@ -69,12 +61,18 @@ public class RankingWF extends RichWindowFunction<Tuple4<Long, String, Long, Lon
             Tuple2<String, Long> ranked = ordset.poll();
             sb.append(","+ranked._1+","+ranked._2);
         }
-
-        long windowLatency = System.nanoTime() - lastPTinAllWindow;
-        windowLatency = windowLatency/1000000;
-        sb.append("|lat:"+windowLatency+" ms");
+        sb.append("|lat:"+windowLatency+"ms");
 
         out.collect(sb.toString());
+
+    }
+
+    private void computeQueryLatency(long lastPTinAllWindow) {
+        windowLatency = 0;
+        if (lastPTinAllWindow > 0) {
+            long elapsedTime = System.nanoTime() - lastPTinAllWindow;
+            windowLatency = elapsedTime/1000000;
+        }
 
     }
 }

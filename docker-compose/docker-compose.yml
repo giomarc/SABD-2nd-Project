@@ -36,7 +36,7 @@ services:
 
     jobmanager:
         #image: erreesse/flink
-        image: flink
+        image: flink:1.8-scala_2.11
         hostname: jobmanager
         container_name: jobmanager
         expose:
@@ -56,7 +56,7 @@ services:
 
     taskmanager:
         #image: erreesse/flink
-        image: flink
+        image: flink:1.8-scala_2.11
         hostname: taskmanager1
         container_name: taskmanager1
         networks:

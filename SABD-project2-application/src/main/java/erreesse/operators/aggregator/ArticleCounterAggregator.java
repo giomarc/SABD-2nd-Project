@@ -1,42 +1,46 @@
 package erreesse.operators.aggregator;
 
+import erreesse.metrics.LatencyTuple1;
 import erreesse.pojo.CommentInfoPOJO;
+import erreesse.pojo.LatencyCommentInfoPojo;
 import org.apache.flink.api.common.functions.AggregateFunction;
-import org.apache.flink.api.java.tuple.Tuple;
-import scala.Tuple2;
 
 /*
 * IN, ACC, OUT
 * */
-public class ArticleCounterAggregator implements AggregateFunction<CommentInfoPOJO,Tuple2<Long, Long>, Tuple2<Long, Long>> {
+public class ArticleCounterAggregator implements AggregateFunction<CommentInfoPOJO, LatencyTuple1<Long>, LatencyTuple1<Long>> {
 
     @Override
-    public Tuple2<Long,Long> createAccumulator() {
-        return new Tuple2<>(0L,0L);
+    public LatencyTuple1<Long> createAccumulator() {
+        return new LatencyTuple1<>(0L);
     }
 
     @Override
-    public Tuple2<Long, Long> add(CommentInfoPOJO commentInfoPOJO, Tuple2<Long, Long> accumulator) {
-        long counter = accumulator._1;
-        counter +=1;
+    public LatencyTuple1<Long> add(CommentInfoPOJO commentInfoPOJO, LatencyTuple1<Long> accumulator) {
+        long counter = accumulator._1 +1;
+        LatencyTuple1 result = new LatencyTuple1<>(counter);
 
-        long lastProcessingTime = commentInfoPOJO.processingTime;
-        long lastAccumProcessingTime = accumulator._2;
-        if (lastAccumProcessingTime<lastProcessingTime) lastAccumProcessingTime = lastProcessingTime;
+        if (commentInfoPOJO instanceof LatencyCommentInfoPojo) {
+            LatencyCommentInfoPojo lcip = (LatencyCommentInfoPojo) commentInfoPOJO;
+            long lastProcessingTime = Math.max(lcip.getStartTime(),accumulator.getStartTime());
+            result.setStartTime(lastProcessingTime);
+        }
 
-        return new Tuple2<>(counter,lastAccumProcessingTime);
+        return result;
     }
 
     @Override
-    public Tuple2<Long, Long> getResult(Tuple2<Long, Long> accumulator) {
+    public LatencyTuple1<Long> getResult(LatencyTuple1<Long> accumulator) {
         return accumulator;
     }
 
     @Override
-    public Tuple2<Long, Long> merge(Tuple2<Long, Long> acc1, Tuple2<Long, Long> acc2) {
+    public LatencyTuple1<Long> merge(LatencyTuple1<Long> acc1, LatencyTuple1<Long> acc2) {
         long counter = acc1._1 + acc2._1;
-        long lastTimeStamp = Math.max(acc1._2,acc2._2);
+        long lastTimeStamp = Math.max(acc1.getStartTime(),acc2.getStartTime());
 
-        return new Tuple2<Long, Long>(counter,lastTimeStamp);
+        LatencyTuple1<Long> mergeAcc = new LatencyTuple1<>(counter);
+        mergeAcc.setStartTime(lastTimeStamp);
+        return mergeAcc;
     }
 }

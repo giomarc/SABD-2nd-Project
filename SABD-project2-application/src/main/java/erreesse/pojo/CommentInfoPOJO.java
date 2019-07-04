@@ -6,27 +6,24 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 @Data
+@NoArgsConstructor
 public class CommentInfoPOJO implements Serializable {
 
-    public CommentInfoPOJO() {
-        processingTime = System.nanoTime();
-    }
+    protected long approvedDate;
+    protected String articleID;
 
-    private long approvedDate;
-    private String articleID;
+    protected long commentID;
+    protected String commentType;
+    protected long createDate;
+    protected int depth;
 
-    private long commentID;
-    private String commentType;
-    private long createDate;
-    private int depth;
+    protected boolean editorsSelection;
+    protected long inReplyTo;
 
-    private boolean editorsSelection;
-    private long inReplyTo;
-
-    private double recommendations;
-    private String userDisplayName;
-    private String parentUserDisplayName;
-    private long userID;
+    protected double recommendations;
+    protected String userDisplayName;
+    protected String parentUserDisplayName;
+    protected long userID;
 
     public void setRecommendations(Double rec) {
         if (editorsSelection) {
@@ -35,8 +32,6 @@ public class CommentInfoPOJO implements Serializable {
             recommendations = rec;
         }
     }
-
-    public long processingTime;
 
     public boolean isDirect() {
         return depth == 1;

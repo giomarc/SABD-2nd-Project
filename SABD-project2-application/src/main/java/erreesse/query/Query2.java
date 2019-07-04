@@ -2,35 +2,20 @@ package erreesse.query;
 
 import erreesse.datasource.KafkaCommentInfoSource;
 import erreesse.executionenvironment.RSExecutionEnvironment;
-import erreesse.operators.aggregator.CommentCounterAggregator;
-import erreesse.operators.apply.ConcatBuilderWF;
+import erreesse.metrics.ProbabilisticLatencyAssigner;
+import erreesse.operators.aggregator.FasciaAggregator;
 import erreesse.operators.filter.CommentInfoPOJOValidator;
-import erreesse.operators.keyby.KeyByValue;
-import erreesse.operators.keyby.KeyByWindowStart2;
 import erreesse.operators.map.TwoHourMapFunction;
-import erreesse.operators.trigger.FasciaTrigger;
+import erreesse.operators.processwindowfunctions.FasciaProcessWindowFunction;
 import erreesse.operators.windowassigner.MonthWindowAssigner;
-import erreesse.operators.processwindowfunctions.CommentCounterProcessWF;
 import erreesse.pojo.CommentInfoPOJO;
 import erreesse.time.DateTimeAscendingAssigner;
-import org.apache.flink.api.common.ExecutionConfig;
-import org.apache.flink.api.common.functions.AggregateFunction;
-import org.apache.flink.api.common.functions.RichAggregateFunction;
-import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.core.fs.FileSystem;
-import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.datastream.KeyedStream;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.windowing.assigners.WindowAssigner;
 import org.apache.flink.streaming.api.windowing.time.Time;
-import org.apache.flink.streaming.api.windowing.triggers.Trigger;
-import org.apache.flink.streaming.api.windowing.windows.Window;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-@Deprecated
 public class Query2 {
 
     public static void main(String[] args) {
@@ -38,48 +23,50 @@ public class Query2 {
 
         // set up environment
         StreamExecutionEnvironment env = RSExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(2);
 
-        // KeyedStream<V, K>
-        KeyedStream<Integer, Integer> originalStream = env
+        SingleOutputStreamOperator<Integer> originalStream = env
                 .addSource(new KafkaCommentInfoSource())
                 .map(line -> CommentInfoPOJO.parseFromStringLine(line))
                 .filter(new CommentInfoPOJOValidator())
+                .map(new ProbabilisticLatencyAssigner())
                 .filter(cip -> cip.isDirect())
                 .assignTimestampsAndWatermarks(new DateTimeAscendingAssigner())
-                .map(new TwoHourMapFunction())
-                .keyBy(new KeyByValue());
+                .map(new TwoHourMapFunction());
+
+                // timeWindowAll per assegnare la finestra di 1 giorno / 7 giorni / 1 mese
+                // NON POSSO USARE KEYBY altrimenti l'aggregatore incrementa solo la sua chiave
+                // uso aggregatore custom (mappa o array con 12 posizioni)
+                // per ogni elemento aggiunto alla finestra
+                // determino la fascia
+                // faccio hit ++ per ogni fascia
+                // alla scadenza della finestra invoco la process window function
+                // che ha ricevuto la mappa accumulatore dalla aggregate
+                // a questo punto process window function emette una Tupla3<Timestamp, Stringa>
+                // dove Stringa è count h00, count h02, ..., count h20, count h22
+                // NB: se implementiamo la merge dell'accumulatore possiamo portare il parallesismo > 1
 
         DataStream<String> dayStream;
         DataStream<String> weekStream;
         DataStream<String> monthStream;
 
-
         dayStream = originalStream
-                .timeWindow(Time.days(1))
-                .aggregate(new CommentCounterAggregator(), new CommentCounterProcessWF())
-                .keyBy(new KeyByWindowStart2())
-                .timeWindow(Time.days(1))
-                .apply(new ConcatBuilderWF());
-
+                .timeWindowAll(Time.hours(24))
+                .aggregate(new FasciaAggregator(), new FasciaProcessWindowFunction());
 
         weekStream = originalStream
-                .timeWindow(Time.days(7))
-                .aggregate(new CommentCounterAggregator(), new CommentCounterProcessWF())
-                .keyBy(new KeyByWindowStart2())
-                .timeWindow(Time.days(7))
-                .apply(new ConcatBuilderWF());
+                .timeWindowAll(Time.days(7))
+                .aggregate(new FasciaAggregator(), new FasciaProcessWindowFunction());
 
         monthStream = originalStream
-                .window(new MonthWindowAssigner())
-                .aggregate(new CommentCounterAggregator(), new CommentCounterProcessWF())
-                .keyBy(new KeyByWindowStart2())
-                .window(new MonthWindowAssigner())
-                .apply(new ConcatBuilderWF());
+                .windowAll(new MonthWindowAssigner())
+                .aggregate(new FasciaAggregator(), new FasciaProcessWindowFunction());
 
 
         dayStream.writeAsText("/sabd/result/query2/24hour.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
-        weekStream.writeAsText("/sabd/result/query2/7days.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
+        weekStream.writeAsText("/sabd/result/query2/1week.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
         monthStream.writeAsText("/sabd/result/query2/1month.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
+
 
         try {
             env.execute("Query2");
