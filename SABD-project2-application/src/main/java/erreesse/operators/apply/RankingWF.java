@@ -4,6 +4,7 @@ import erreesse.metrics.LatencyTuple3;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.metrics.Gauge;
 import org.apache.flink.streaming.api.functions.windowing.RichWindowFunction;
+import org.apache.flink.streaming.api.functions.windowing.WindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 import scala.Tuple2;
@@ -17,16 +18,8 @@ import java.util.PriorityQueue;
 * KEY
 * TW
 * */
-public class RankingWF extends RichWindowFunction<LatencyTuple3<Long, String, Long>, String, Long, TimeWindow> {
-
+public class RankingWF implements WindowFunction<LatencyTuple3<Long, String, Long>, String, Long, TimeWindow> {
     private transient long windowLatency = 0;
-
-    @Override
-    public void open(Configuration config) {
-        getRuntimeContext()
-                .getMetricGroup()
-                .gauge("ErreEsseLatencyQuery1", (Gauge<Long>) () -> windowLatency);
-    }
 
     @Override
     public void apply(Long key,

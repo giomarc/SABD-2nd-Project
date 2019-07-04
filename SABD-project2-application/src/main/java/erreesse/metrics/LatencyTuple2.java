@@ -1,12 +1,16 @@
 package erreesse.metrics;
 
+import lombok.Getter;
+
 public class LatencyTuple2<T1,T2> extends scala.Tuple2<T1,T2> implements LatencyMarker {
 
     public LatencyTuple2(T1 _1, T2 _2) {
         super(_1,_2);
     }
 
+    @Getter
     protected long startTime = 0L;
+    @Getter
     protected long endTime = 0L;
 
     @Override

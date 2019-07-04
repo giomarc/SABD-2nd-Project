@@ -2,6 +2,7 @@ package erreesse.query;
 
 import erreesse.datasource.KafkaCommentInfoSource;
 import erreesse.executionenvironment.RSExecutionEnvironment;
+import erreesse.metrics.LatencyTuple1;
 import erreesse.metrics.ProbabilisticLatencyAssigner;
 import erreesse.operators.aggregator.FasciaAggregator;
 import erreesse.operators.filter.CommentInfoPOJOValidator;
@@ -23,9 +24,8 @@ public class Query2 {
 
         // set up environment
         StreamExecutionEnvironment env = RSExecutionEnvironment.getExecutionEnvironment();
-        env.setParallelism(2);
 
-        SingleOutputStreamOperator<Integer> originalStream = env
+        SingleOutputStreamOperator<LatencyTuple1<Integer>> originalStream = env
                 .addSource(new KafkaCommentInfoSource())
                 .map(line -> CommentInfoPOJO.parseFromStringLine(line))
                 .filter(new CommentInfoPOJOValidator())

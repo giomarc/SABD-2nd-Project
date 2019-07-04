@@ -2,6 +2,7 @@ package erreesse.query;
 
 import erreesse.datasource.KafkaCommentInfoSource;
 import erreesse.executionenvironment.RSExecutionEnvironment;
+import erreesse.metrics.ProbabilisticLatencyAssigner;
 import erreesse.operators.cogroup.ComputePopularUserCGF;
 import erreesse.operators.filter.CommentInfoPOJOValidator;
 import erreesse.operators.windowassigner.MonthWindowAssigner;
@@ -28,6 +29,7 @@ public class Query3 {
                 .addSource(new KafkaCommentInfoSource())
                 .map(line -> CommentInfoPOJO.parseFromStringLine(line))
                 .filter(new CommentInfoPOJOValidator())
+                .map(new ProbabilisticLatencyAssigner())
                 .assignTimestampsAndWatermarks(new DateTimeAscendingAssigner());
 
 
@@ -43,39 +45,6 @@ public class Query3 {
                 .where((KeySelector<CommentInfoPOJO, Long>) commentInfoPOJO -> commentInfoPOJO.getCommentID())
                 .equalTo((KeySelector<CommentInfoPOJO, Long>) commentInfoPOJO -> commentInfoPOJO.getInReplyTo());
 
-
-        /*cogroupedStreams
-                .window(TumblingEventTimeWindows.of(Time.days(1)))
-                .apply(new CoGroupFunction<CommentInfoPOJO, CommentInfoPOJO, String>() {
-                    @Override
-                    public void coGroup(Iterable<CommentInfoPOJO> iterableDirect,
-                                        Iterable<CommentInfoPOJO> iterableIndirect,
-                                        Collector<String> out) throws Exception {
-
-                        StringBuilder sb = new StringBuilder();
-                        double totalLike = 0.0;
-                        double b = 0.0;
-
-
-                        sb.append("iterableDirect:\n");
-                        for (CommentInfoPOJO cip : iterableDirect) {
-                            totalLike = totalLike + cip.getRecommendations();
-                            sb.append(cip+"\n");
-                        }
-                        sb.append("iterableIndirect:\n");
-                        for (CommentInfoPOJO cip : iterableIndirect) {
-                            b = b + 1.0;
-                            sb.append(cip+"\n");
-                        }
-
-                        double finalResult = 0.3 * totalLike + 0.7 * b;
-                        sb.append("-------------CALCOLO LA POP-----------------------\n\n");
-                        sb.append("a:"+totalLike+"; b:"+b+"; totale: "+finalResult);
-                        sb.append("\n-------------------------------------------------------\n\n");
-                        out.collect(sb.toString());
-
-                    }
-                }).writeAsText("/sabd/result/query3/test.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);*/
 
         hourStream = cogroupedStreams
                 .window(TumblingEventTimeWindows.of(Time.days(1)))
