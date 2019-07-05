@@ -28,4 +28,7 @@ hs_err_pid*
 target
 
 docker-compose/dataset/Comments_jan-apr2018.csv
-docker-compose/flink_jar
+docker-compose/flink_jar/SABD-project2-application-1.0-SNAPSHOT.jar
+
+.project
+.settings

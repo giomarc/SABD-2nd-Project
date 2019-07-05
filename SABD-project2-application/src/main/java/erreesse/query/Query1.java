@@ -14,6 +14,7 @@ import erreesse.pojo.CommentInfoPOJO;
 import erreesse.time.DateTimeAscendingAssigner;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.DataStreamSink;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -24,7 +25,7 @@ public class Query1 {
     public static void main(String[] args) {
 
         // set up environment
-        StreamExecutionEnvironment env = RSExecutionEnvironment.getExecutionEnvironment();
+        StreamExecutionEnvironment env = RSExecutionEnvironment.getExecutionEnvironment().setParallelism(2);
 
         KeyedStream<CommentInfoPOJO, String> originalStream = env
                 .addSource(new KafkaCommentInfoSource())
@@ -62,9 +63,13 @@ public class Query1 {
                 .apply(new RankingWF());
 
 
-        hourStream.addSink(new KafkaCommentInfoSink("query1-output-1hour"));
+        //For throughput compute only
+        DataStreamSink<String> stringDataStreamSink = hourStream.union(dayStream, weekStream).addSink(new KafkaCommentInfoSink("query1-output-total"));
+
+
+    /*    hourStream.addSink(new KafkaCommentInfoSink("query1-output-1hour"));
         dayStream.addSink(new KafkaCommentInfoSink("query1-output-1day"));
-        weekStream.addSink(new KafkaCommentInfoSink("query1-output-1week"));
+        weekStream.addSink(new KafkaCommentInfoSink("query1-output-1week")); */
 
 
         hourStream.writeAsText("/sabd/result/query1/1hour.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
