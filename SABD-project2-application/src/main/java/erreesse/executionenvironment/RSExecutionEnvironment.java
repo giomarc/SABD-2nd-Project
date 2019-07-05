@@ -1,6 +1,5 @@
 package erreesse.executionenvironment;
 
-import org.apache.flink.runtime.state.filesystem.FsStateBackend;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
@@ -18,7 +17,7 @@ public class RSExecutionEnvironment {
         //env.setStateBackend(new FsStateBackend("hdfs:///master:54310/flink-state/"));
         // start a checkpoint every 5000 ms
         //env.enableCheckpointing(5000);
-
+        //env.getConfig().setLatencyTrackingInterval(5L);
 
         return env;
     }

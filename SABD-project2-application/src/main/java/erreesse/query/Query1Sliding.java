@@ -16,11 +16,10 @@ import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSink;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
-import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
 
-public class Query1 {
+public class Query1Sliding {
 
     public static void main(String[] args) {
 
@@ -42,24 +41,24 @@ public class Query1 {
 
 
         hourStream = originalStream
-                .timeWindow(Time.hours(1))
+                .timeWindow(Time.hours(1),Time.minutes(15))
                 .aggregate(new ArticleCounterAggregator(), new ArticleCounterProcessWF())
                 .keyBy(new KeyByWindowStart())
-                .timeWindow(Time.hours(1))
+                .timeWindow(Time.hours(1),Time.minutes(15))
                 .apply(new RankingWF());
 
         dayStream = originalStream
-                .timeWindow(Time.days(1))
+                .timeWindow(Time.days(1),Time.minutes(15))
                 .aggregate(new ArticleCounterAggregator(), new ArticleCounterProcessWF())
                 .keyBy(new KeyByWindowStart())
-                .timeWindow(Time.days(1))
+                .timeWindow(Time.days(1),Time.minutes(15))
                 .apply(new RankingWF());
 
         weekStream = originalStream
-                .timeWindow(Time.days(7))
+                .timeWindow(Time.days(7),Time.minutes(15))
                 .aggregate(new ArticleCounterAggregator(), new ArticleCounterProcessWF())
                 .keyBy(new KeyByWindowStart())
-                .timeWindow(Time.days(7))
+                .timeWindow(Time.days(7),Time.minutes(15))
                 .apply(new RankingWF());
 
 

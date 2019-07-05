@@ -7,7 +7,7 @@ import org.apache.flink.api.common.functions.MapFunction;
 
 public class ProbabilisticLatencyAssigner implements MapFunction<CommentInfoPOJO, CommentInfoPOJO> {
 
-    private double probThreshold = 1.0;
+    private double probThreshold = 0.4;
     @Override
     public CommentInfoPOJO map(CommentInfoPOJO commentInfoPOJO) throws Exception {
 
