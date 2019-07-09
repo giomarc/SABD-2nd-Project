@@ -1,7 +1,10 @@
 package erreesse.executionenvironment;
 
+import org.apache.flink.contrib.streaming.state.RocksDBStateBackend;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+
+import java.io.IOException;
 
 public class RSExecutionEnvironment {
 
@@ -18,6 +21,13 @@ public class RSExecutionEnvironment {
         // start a checkpoint every 5000 ms
         //env.enableCheckpointing(5000);
         //env.getConfig().setLatencyTrackingInterval(5L);
+
+        String filebackend = "alluxio://alluxio:19998/flink-state";
+        try {
+            env.setStateBackend(new RocksDBStateBackend(filebackend,true));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         return env;
     }

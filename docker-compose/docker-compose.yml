@@ -103,6 +103,35 @@ services:
         volumes:
             - ./dataset:/sabd/dataset
 
+    alluxio-master:
+        image: alluxio/alluxio
+        container_name: alluxio-master
+        hostname: alluxio-master
+        networks:
+            - app_network
+        ports:
+            - "19999:19999" # remote intellij debug
+        command: master
+        volumes: 
+            - data-alluxio:/opt/alluxio/underFSStorage
+
+    alluxio-worker:
+        image: alluxio/alluxio
+        container_name: alluxio-worker
+        hostname: alluxio-worker
+        networks:
+            - app_network
+        command: worker
+        environment:
+            - ALLUXIO_MASTER_HOSTNAME=alluxio-worker
+            - ALLUXIO_WORKER_MEMORY_SIZE=1G
+        volumes: 
+            - data-alluxio:/opt/alluxio/underFSStorage
+
+volumes:
+  data-alluxio:
+    driver: local
+
     # master:
     #     build:
     #         context: ../docker-images/hdfs

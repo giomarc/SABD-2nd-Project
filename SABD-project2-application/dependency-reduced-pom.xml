@@ -182,16 +182,8 @@
           <groupId>org.apache.flink</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>commons-lang3</artifactId>
-          <groupId>org.apache.commons</groupId>
-        </exclusion>
-        <exclusion>
           <artifactId>commons-math3</artifactId>
           <groupId>org.apache.commons</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jsr305</artifactId>
-          <groupId>com.google.code.findbugs</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -216,10 +208,6 @@
         <exclusion>
           <artifactId>commons-math3</artifactId>
           <groupId>org.apache.commons</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jsr305</artifactId>
-          <groupId>com.google.code.findbugs</groupId>
         </exclusion>
       </exclusions>
     </dependency>
