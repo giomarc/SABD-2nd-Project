@@ -32,3 +32,5 @@ docker-compose/flink_jar/SABD-project2-application-1.0-SNAPSHOT.jar
 
 .project
 .settings
+
+!docker-images/flink/external_jar_lib/*.jar

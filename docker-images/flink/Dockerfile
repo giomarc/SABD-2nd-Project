@@ -24,18 +24,7 @@ RUN chmod 777 $HADOOP_CONF_DIR/core-site.xml
 RUN chmod 777 $HADOOP_CONF_DIR/hdfs-site.xml
 
 COPY conf/docker-entrypoint.sh /
-#COPY conf/config.sh $FLINK_HOME/bin
-#COPY conf/flink-console.sh $FLINK_HOME/bin
-#COPY conf/jobmanager.sh $FLINK_HOME/bin
-#COPY conf/taskmanager.sh $FLINK_HOME/bin
-
-
 RUN chmod +x /docker-entrypoint.sh
-#RUN chmod +x $FLINK_HOME/bin/config.sh
-#RUN chmod +x $FLINK_HOME/bin/flink-console.sh
-#RUN chmod +x $FLINK_HOME/bin/jobmanager.sh
-#RUN chmod +x $FLINK_HOME/bin/taskmanager.sh
-
 
 COPY external_jar_lib/*.jar $FLINK_HOME/lib/
 

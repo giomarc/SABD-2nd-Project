@@ -35,6 +35,8 @@ services:
             - KAFKA_CREATE_TOPICS=query1:1:1
 
     jobmanager:
+        build:
+            context: ../docker-images/flink
         image: erreesse/flink
         hostname: jobmanager
         container_name: jobmanager
@@ -97,6 +99,8 @@ services:
             - ./dataset:/sabd/dataset
 
     alluxio-master:
+        build:
+            context: ../docker-images/alluxio
         image: erreesse/alluxio
         container_name: alluxio-master
         hostname: alluxio-master
