@@ -11,11 +11,15 @@ import erreesse.operators.processwindowfunctions.FasciaProcessWindowFunction;
 import erreesse.operators.windowassigner.MonthWindowAssigner;
 import erreesse.pojo.CommentInfoPOJO;
 import erreesse.time.DateTimeAscendingAssigner;
+import org.apache.flink.client.program.ProgramInvocationException;
 import org.apache.flink.core.fs.FileSystem;
+import org.apache.flink.runtime.client.JobCancellationException;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
+
+import java.util.concurrent.CancellationException;
 
 public class Query2 {
 
@@ -70,7 +74,10 @@ public class Query2 {
 
         try {
             env.execute("Query2");
-        } catch (Exception e) {
+        } catch (ProgramInvocationException | JobCancellationException | CancellationException e) {
+            System.err.println("Interrupted job by user");
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }

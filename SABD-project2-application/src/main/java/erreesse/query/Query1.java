@@ -12,13 +12,17 @@ import erreesse.operators.keyby.KeyByWindowStart;
 import erreesse.operators.processwindowfunctions.ArticleCounterProcessWF;
 import erreesse.pojo.CommentInfoPOJO;
 import erreesse.time.DateTimeAscendingAssigner;
+import org.apache.flink.client.program.ProgramInvocationException;
 import org.apache.flink.core.fs.FileSystem;
+import org.apache.flink.runtime.client.JobCancellationException;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSink;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
+
+import java.util.concurrent.CancellationException;
 
 public class Query1 {
 
@@ -78,7 +82,10 @@ public class Query1 {
 
         try {
             env.execute("Query1");
-        } catch (Exception e) {
+        } catch (ProgramInvocationException | JobCancellationException | CancellationException e) {
+            System.err.println("Interrupted job by user");
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }

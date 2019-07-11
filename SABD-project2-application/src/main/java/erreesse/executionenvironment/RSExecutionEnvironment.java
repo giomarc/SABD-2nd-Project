@@ -25,6 +25,10 @@ public class RSExecutionEnvironment {
         // save checkpoints on local filesystem (shared volume with others containers)
         //env.setStateBackend(new FsStateBackend("file:///opt/checkpoint-flink"));
 
+        // STATEBACKEND and CHECKPOINTING ALLUXIO
+        String filebackend = "alluxio://alluxio-master:19998/flink-state";
+        env.setStateBackend((StateBackend) new FsStateBackend(filebackend,true));
+
         // STATEBACKEND and CHECKPOINTING ROCKSDB
         /*try {
             env.setStateBackend(new RocksDBStateBackend("hdfs://master:54310/flink-state"));
@@ -32,9 +36,6 @@ public class RSExecutionEnvironment {
             e.printStackTrace();
         }*/
 
-        // STATEBACKEND and CHECKPOINTING ALLUXIO
-        String filebackend = "alluxio://alluxio-master:19998/flink-state";
-        env.setStateBackend(new FsStateBackend(filebackend));
 
         // start a checkpoint every 5000 ms
         env.enableCheckpointing(5000);
