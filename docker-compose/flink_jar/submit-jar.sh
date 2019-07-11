@@ -2,6 +2,8 @@
 
 #$FLINK_HOME/bin/flink run -c erreesse.query.Query1 /sabd/jar/SABD-project2-application-1.0-SNAPSHOT.jar
 PROGNAME=$0
+# set permission on directory for checkpointing
+chmod 777 -R /opt/checkpoint-flink
 
 usage() {
 cat << EOF >&2

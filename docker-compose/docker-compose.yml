@@ -35,8 +35,8 @@ services:
             - KAFKA_CREATE_TOPICS=query1:1:1
 
     jobmanager:
-        #image: erreesse/flink
-        image: flink:1.8-scala_2.11
+        #image: flink:1.8-scala_2.11
+        image: erreesse/flink
         hostname: jobmanager
         container_name: jobmanager
         expose:
@@ -45,18 +45,17 @@ services:
             - app_network
         ports:
             - "8081:8081"
-        # depends_on:
-        #     - master
         command: jobmanager
         environment:
             - JOB_MANAGER_RPC_ADDRESS=jobmanager
         volumes:
             - ./flink_jar:/sabd/jar
             - ./result:/sabd/result
+            - checkpoint-flink:/opt/checkpoint-flink
 
     taskmanager:
-        #image: erreesse/flink
-        image: flink:1.8-scala_2.11
+        #image: flink:1.8-scala_2.11
+        image: erreesse/flink
         hostname: taskmanager1
         container_name: taskmanager1
         networks:
@@ -64,11 +63,6 @@ services:
         expose:
             - "6121"
             - "6122"
-            #- "5005" # remote intellij debug
-        #ports:
-            #- "5005:5005" # remote intellij debug
-        # depends_on:
-        #     - master
         depends_on:
             - jobmanager
         command: taskmanager
@@ -76,8 +70,7 @@ services:
             - JOB_MANAGER_RPC_ADDRESS=jobmanager
         volumes:
             - ./result:/sabd/result
-
-
+            - checkpoint-flink:/opt/checkpoint-flink
 
     kafka-producer:
         image: wurstmeister/kafka
@@ -107,11 +100,17 @@ services:
         image: alluxio/alluxio
         container_name: alluxio-master
         hostname: alluxio-master
+        depends_on: 
+            - master
         networks:
             - app_network
+        expose: 
+            - "19998"
         ports:
             - "19999:19999" # remote intellij debug
         command: master
+        environment:
+            - ALLUXIO_JAVA_OPTS="-Dalluxio.master.mount.table.root.ufs=hdfs://master:54310"
         volumes: 
             - data-alluxio:/opt/alluxio/underFSStorage
 
@@ -119,79 +118,84 @@ services:
         image: alluxio/alluxio
         container_name: alluxio-worker
         hostname: alluxio-worker
+        depends_on: 
+            - alluxio-master
         networks:
             - app_network
         command: worker
+        shm_size: 1G
         environment:
-            - ALLUXIO_MASTER_HOSTNAME=alluxio-worker
-            - ALLUXIO_WORKER_MEMORY_SIZE=1G
+            - ALLUXIO_MASTER_HOSTNAME=alluxio-master
+            - ALLUXIO_JAVA_OPTS="-Dalluxio.worker.memory.size=1G"
         volumes: 
             - data-alluxio:/opt/alluxio/underFSStorage
 
+    master:
+        build:
+            context: ../docker-images/hdfs
+        image: erreesse/hdfs
+        container_name: master
+        hostname: master
+        networks:
+            - app_network
+        ports:
+            - "9870:9870"  # hdfs ui
+            - "54310:54310"  # hdfs 
+        stdin_open: true
+        tty: true
+        environment: 
+            - ISMASTER=1
+
+    slave1:
+        image: erreesse/hdfs
+        container_name: slave1
+        hostname: slave1
+        networks:
+            - app_network
+        ports:
+            - "9864:9864"
+        depends_on:
+            - master
+        stdin_open: true
+        tty: true
+        environment: 
+            - ISMASTER=0
+
+
+    slave2:
+        image: erreesse/hdfs
+        container_name: slave2
+        hostname: slave2
+        networks:
+            - app_network
+        ports:
+            - "9863:9864"
+        depends_on:
+            - master
+        stdin_open: true
+        tty: true
+        environment: 
+            - ISMASTER=0
+
+
+    slave3:
+        image: erreesse/hdfs
+        container_name: slave3
+        hostname: slave3
+        networks:
+            - app_network
+        ports:
+            - "9862:9864"
+        depends_on:
+            - master
+        stdin_open: true
+        tty: true
+        environment: 
+            - ISMASTER=0
+  
+
 volumes:
-  data-alluxio:
-    driver: local
-
-    # master:
-    #     build:
-    #         context: ../docker-images/hdfs
-    #     image: erreesse/hdfs
-    #     container_name: master
-    #     hostname: master
-    #     networks:
-    #         - app_network
-    #     ports:
-    #         - "9870:9870" # hdfs ui
-    #         - "54310:54310" # hdfs 
-    #     stdin_open: true
-    #     tty: true
-    #     environment: 
-    #         - ISMASTER=1
-
-    # slave1:
-    #     image: erreesse/hdfs
-    #     container_name: slave1
-    #     hostname: slave1
-    #     networks:
-    #         - app_network
-    #     ports:
-    #         - "9864:9864"
-    #     depends_on:
-    #         - master
-    #     stdin_open: true
-    #     tty: true
-    #     environment: 
-    #         - ISMASTER=0
-
-  
-    # slave2:
-    #     image: erreesse/hdfs
-    #     container_name: slave2
-    #     hostname: slave2
-    #     networks:
-    #         - app_network
-    #     ports:
-    #         - "9863:9864"
-    #     depends_on:
-    #         - master
-    #     stdin_open: true
-    #     tty: true
-    #     environment: 
-    #         - ISMASTER=0
-
-
-    # slave3:
-    #     image: erreesse/hdfs
-    #     container_name: slave3
-    #     hostname: slave3
-    #     networks:
-    #         - app_network
-    #     ports:
-    #         - "9862:9864"
-    #     depends_on:
-    #         - master
-    #     stdin_open: true
-    #     tty: true
-    #     environment: 
-    #         - ISMASTER=0
-  
+    data-alluxio:
+        driver: local
+    checkpoint-flink:
+        driver: local

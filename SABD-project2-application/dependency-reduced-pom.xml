@@ -126,25 +126,6 @@
       </plugin>
     </plugins>
   </build>
-  <profiles>
-    <profile>
-      <id>add-dependencies-for-IDEA</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.flink</groupId>
-          <artifactId>flink-java</artifactId>
-          <version>${flink.version}</version>
-          <scope>compile</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.flink</groupId>
-          <artifactId>flink-streaming-java_${scala.binary.version}</artifactId>
-          <version>${flink.version}</version>
-          <scope>compile</scope>
-        </dependency>
-      </dependencies>
-    </profile>
-  </profiles>
   <repositories>
     <repository>
       <releases>
@@ -181,10 +162,6 @@
           <artifactId>flink-shaded-asm-6</artifactId>
           <groupId>org.apache.flink</groupId>
         </exclusion>
-        <exclusion>
-          <artifactId>commons-math3</artifactId>
-          <groupId>org.apache.commons</groupId>
-        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -204,10 +181,6 @@
         <exclusion>
           <artifactId>flink-shaded-guava</artifactId>
           <groupId>org.apache.flink</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>commons-math3</artifactId>
-          <groupId>org.apache.commons</groupId>
         </exclusion>
       </exclusions>
     </dependency>

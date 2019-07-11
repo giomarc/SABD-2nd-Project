@@ -22,6 +22,12 @@
 JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
 CONF_FILE="${FLINK_HOME}/conf/flink-conf.yaml"
 
+echo "Setting HADOOP_CLASSPATH"
+export HADOOP_CLASSPATH=`hadoop classpath`
+
+echo "env.hadoop.conf.dir: ${HADOOP_CONF_DIR}" >> "${CONF_FILE}"
+echo "fs.hdfs.hadoopconf: ${HADOOP_CONF_DIR}" >> "${CONF_FILE}"
+
 drop_privs_cmd() {
     if [ $(id -u) != 0 ]; then
         # Don't need to drop privs if EUID != 0
@@ -61,6 +67,7 @@ elif [ "$1" = "jobmanager" ]; then
     fi
 
     echo "config file: " && grep '^[^\n#]' "${CONF_FILE}"
+    #HADOOP_CLASSPATH=`hadoop classpath`
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/jobmanager.sh" start-foreground "$@"
 elif [ "$1" = "taskmanager" ]; then
     shift 1
@@ -92,9 +99,10 @@ elif [ "$1" = "taskmanager" ]; then
         echo "query.server.port: 6125" >> "${CONF_FILE}"
     fi
     
-    echo "env.java.opts: \"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005\"" >> "${CONF_FILE}"
+    #echo "env.java.opts: \"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005\"" >> "${CONF_FILE}"
     
     echo "config file: " && grep '^[^\n#]' "${CONF_FILE}"
+    #HADOOP_CLASSPATH=`hadoop classpath`
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/taskmanager.sh" start-foreground "$@"
 fi
 
