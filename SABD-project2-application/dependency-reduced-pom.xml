@@ -162,6 +162,14 @@
           <artifactId>flink-shaded-asm-6</artifactId>
           <groupId>org.apache.flink</groupId>
         </exclusion>
+        <exclusion>
+          <artifactId>commons-lang3</artifactId>
+          <groupId>org.apache.commons</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>commons-math3</artifactId>
+          <groupId>org.apache.commons</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -181,6 +189,10 @@
         <exclusion>
           <artifactId>flink-shaded-guava</artifactId>
           <groupId>org.apache.flink</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>commons-math3</artifactId>
+          <groupId>org.apache.commons</groupId>
         </exclusion>
       </exclusions>
     </dependency>

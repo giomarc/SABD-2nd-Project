@@ -33,8 +33,8 @@ public class RSExecutionEnvironment {
         }*/
 
         // STATEBACKEND and CHECKPOINTING ALLUXIO
-        /*String filebackend = "alluxio://alluxio-master:19998/flink-state";
-        env.setStateBackend(new FsStateBackend(filebackend,true));*/
+        String filebackend = "alluxio://alluxio-master:19998/flink-state";
+        env.setStateBackend(new FsStateBackend(filebackend));
 
         // start a checkpoint every 5000 ms
         env.enableCheckpointing(5000);

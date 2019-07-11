@@ -48,6 +48,7 @@ services:
         command: jobmanager
         environment:
             - JOB_MANAGER_RPC_ADDRESS=jobmanager
+            - HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop
         volumes:
             - ./flink_jar:/sabd/jar
             - ./result:/sabd/result
@@ -68,6 +69,7 @@ services:
         command: taskmanager
         environment:
             - JOB_MANAGER_RPC_ADDRESS=jobmanager
+            - HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop
         volumes:
             - ./result:/sabd/result
             - checkpoint-flink:/opt/checkpoint-flink
@@ -97,7 +99,8 @@ services:
             - ./dataset:/sabd/dataset
 
     alluxio-master:
-        image: alluxio/alluxio
+        #image: alluxio/alluxio:1.8.1
+        image: erreesse/alluxio
         container_name: alluxio-master
         hostname: alluxio-master
         depends_on: 
@@ -110,12 +113,14 @@ services:
             - "19999:19999" # remote intellij debug
         command: master
         environment:
+            # -Dalluxio.underfs.object.store.mount.shared.publicly=true
             - ALLUXIO_JAVA_OPTS="-Dalluxio.master.mount.table.root.ufs=hdfs://master:54310"
         volumes: 
             - data-alluxio:/opt/alluxio/underFSStorage
 
     alluxio-worker:
-        image: alluxio/alluxio
+        #image: alluxio/alluxio:1.8.1
+        image: erreesse/alluxio
         container_name: alluxio-worker
         hostname: alluxio-worker
         depends_on: 

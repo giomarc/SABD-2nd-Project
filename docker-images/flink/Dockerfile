@@ -39,11 +39,6 @@ RUN chmod +x /docker-entrypoint.sh
 
 COPY external_jar_lib/*.jar $FLINK_HOME/lib/
 
-#RUN cp $HADOOP_HOME/share/hadoop/common/*.jar $FLINK_HOME/lib/
-#RUN cp $HADOOP_HOME/share/hadoop/common/lib/*.jar $FLINK_HOME/lib/
-#RUN cp $HADOOP_HOME/share/hadoop/hdfs/*.jar $FLINK_HOME/lib/
-#RUN cp $HADOOP_HOME/share/hadoop/hdfs/lib/*.jar $FLINK_HOME/lib/
-
 ENTRYPOINT ["/docker-entrypoint.sh"]
 EXPOSE 6123 8081
 CMD ["help"]
