@@ -93,6 +93,6 @@ to start the Flink job for query1.
 
 ## Students
 
-Ronci Federico - Computer Engineering - University of Rome Tor Vergata
+Ronci Federico - Computer Science Engineering - University of Rome Tor Vergata
 
-Schiazza Antonio - Computer Engineering - University of Rome Tor Vergata
+Schiazza Antonio - Computer Science Engineering - University of Rome Tor Vergata
