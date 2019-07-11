@@ -35,7 +35,6 @@ services:
             - KAFKA_CREATE_TOPICS=query1:1:1
 
     jobmanager:
-        #image: flink:1.8-scala_2.11
         image: erreesse/flink
         hostname: jobmanager
         container_name: jobmanager
@@ -55,7 +54,6 @@ services:
             - checkpoint-flink:/opt/checkpoint-flink
 
     taskmanager:
-        #image: flink:1.8-scala_2.11
         image: erreesse/flink
         hostname: taskmanager1
         container_name: taskmanager1
@@ -99,7 +97,6 @@ services:
             - ./dataset:/sabd/dataset
 
     alluxio-master:
-        #image: alluxio/alluxio:1.8.1
         image: erreesse/alluxio
         container_name: alluxio-master
         hostname: alluxio-master
@@ -110,16 +107,14 @@ services:
         expose: 
             - "19998"
         ports:
-            - "19999:19999" # remote intellij debug
+            - "19999:19999" # web gui
         command: master
         environment:
-            # -Dalluxio.underfs.object.store.mount.shared.publicly=true
             - ALLUXIO_JAVA_OPTS="-Dalluxio.master.mount.table.root.ufs=hdfs://master:54310"
         volumes: 
             - data-alluxio:/opt/alluxio/underFSStorage
 
     alluxio-worker:
-        #image: alluxio/alluxio:1.8.1
         image: erreesse/alluxio
         container_name: alluxio-worker
         hostname: alluxio-worker
@@ -165,39 +160,6 @@ services:
         tty: true
         environment: 
             - ISMASTER=0
-
-
-    slave2:
-        image: erreesse/hdfs
-        container_name: slave2
-        hostname: slave2
-        networks:
-            - app_network
-        ports:
-            - "9863:9864"
-        depends_on:
-            - master
-        stdin_open: true
-        tty: true
-        environment: 
-            - ISMASTER=0
-
-
-    slave3:
-        image: erreesse/hdfs
-        container_name: slave3
-        hostname: slave3
-        networks:
-            - app_network
-        ports:
-            - "9862:9864"
-        depends_on:
-            - master
-        stdin_open: true
-        tty: true
-        environment: 
-            - ISMASTER=0
-  
 
 volumes:
     data-alluxio:
