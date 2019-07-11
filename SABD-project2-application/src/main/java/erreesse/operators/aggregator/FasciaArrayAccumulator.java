@@ -11,19 +11,19 @@ public class FasciaArrayAccumulator {
         initArrayCounter();
     }
 
-    private void checIndex(int index) {
+    private void checkIndex(int index) {
         if (index<0 || index > 12) {
             throw new IllegalArgumentException("index out of range");
         }
     }
 
     public void hit(int index) {
-        checIndex(index);
+        checkIndex(index);
         fasciaCounter[index]++;
     }
 
     public int getCountByIndex(int index) {
-        checIndex(index);
+        checkIndex(index);
         return fasciaCounter[index];
     }
 
