@@ -1,5 +1,6 @@
 package erreesse.operators.apply;
 
+import erreesse.configuration.AppConfiguration;
 import erreesse.metrics.LatencyTuple3;
 import org.apache.flink.streaming.api.functions.windowing.WindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
@@ -51,7 +52,9 @@ public class RankingWF implements WindowFunction<LatencyTuple3<Long, String, Lon
             Tuple2<String, Long> ranked = ordset.poll();
             sb.append(","+ranked._1+","+ranked._2);
         }
-        sb.append("|lat:"+windowLatency+"ms");
+        if (AppConfiguration.PRINT_LATENCY_METRIC) {
+            sb.append("|lat:"+windowLatency+"ms");
+        }
 
         out.collect(sb.toString());
 

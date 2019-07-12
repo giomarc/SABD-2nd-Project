@@ -1,5 +1,6 @@
 package erreesse.operators.windowfunctions;
 
+import erreesse.configuration.AppConfiguration;
 import erreesse.metrics.LatencyTuple2;
 import org.apache.flink.streaming.api.functions.windowing.AllWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
@@ -55,8 +56,9 @@ public class ComputeMostPopularUserWF implements AllWindowFunction<LatencyTuple2
             sb.append(ap);
         }
 
-        sb.append("|lat:"+ queryLatency);
-
+        if (AppConfiguration.PRINT_LATENCY_METRIC) {
+            sb.append("|lat:"+ queryLatency);
+        }
         out.collect(sb.toString());
 
 

@@ -70,11 +70,6 @@ public class Query1Sliding {
         DataStreamSink<String> stringDataStreamSink = hourStream.union(dayStream, weekStream).addSink(new KafkaCommentInfoSink("query1-output-total"));
 
 
-    /*    hourStream.addSink(new KafkaCommentInfoSink("query1-output-1hour"));
-        dayStream.addSink(new KafkaCommentInfoSink("query1-output-1day"));
-        weekStream.addSink(new KafkaCommentInfoSink("query1-output-1week")); */
-
-
         hourStream.writeAsText("/sabd/result/query1/1hour.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
         dayStream.writeAsText("/sabd/result/query1/1day.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
         weekStream.writeAsText("/sabd/result/query1/1week.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);

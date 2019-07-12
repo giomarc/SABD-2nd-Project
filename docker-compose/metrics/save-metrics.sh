@@ -19,7 +19,7 @@ SINK_THR_VTX_ID="f1c4789f15c75d0d32f107a9595d229d" # SINK OPERATOR
 
 
 
-FLINK_THR_IN_METRIC_URL="http://localhost:8081/jobs/$JOB_ID/vertices/$SOURCE_THR_VTX_ID/metrics?get=1.numRecordsOutPerSecond"
+FLINK_THR_IN_METRIC_URL="http://localhost:8081/jobs/$JOB_ID/vertices/$SOURCE_THR_VTX_ID/metrics?get=0.numRecordsOutPerSecond"
 FLINK_THR_OUT_METRIC_URL="http://localhost:8081/jobs/$JOB_ID/vertices/$SINK_THR_VTX_ID/metrics?get=0.numRecordsInPerSecond"
 
 FILE_OUTPUT="metrics_$(date +'%s').txt";

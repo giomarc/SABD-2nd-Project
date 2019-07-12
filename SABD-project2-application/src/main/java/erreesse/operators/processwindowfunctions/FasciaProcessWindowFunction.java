@@ -1,5 +1,6 @@
 package erreesse.operators.processwindowfunctions;
 
+import erreesse.configuration.AppConfiguration;
 import erreesse.metrics.LatencyTuple1;
 import erreesse.operators.aggregator.FasciaArrayAccumulator;
 import org.apache.flink.streaming.api.functions.windowing.ProcessAllWindowFunction;
@@ -31,8 +32,10 @@ public class FasciaProcessWindowFunction extends ProcessAllWindowFunction<Latenc
             sb.append(",");
             sb.append(acc.getCountByIndex(i));
         }
+        if (AppConfiguration.PRINT_LATENCY_METRIC) {
+            sb.append("|lat:"+windowLatency+"ms");
+        }
 
-        sb.append("|lat:"+windowLatency+"ms");
 
 
         collector.collect(sb.toString());

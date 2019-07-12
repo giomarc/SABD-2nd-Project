@@ -9,7 +9,7 @@ public class Distributions {
 
     private Distributions() {
         rngs = new Rngs();
-        rngs.plantSeeds(123456789);
+        rngs.plantSeeds(123456789); // change for different run
         rvgs = new Rvgs(this.rngs);
     }
 
