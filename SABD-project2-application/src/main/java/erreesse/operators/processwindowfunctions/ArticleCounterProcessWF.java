@@ -5,9 +5,6 @@ import erreesse.metrics.LatencyTuple3;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
-import scala.Tuple2;
-import scala.Tuple3;
-import scala.Tuple4;
 
 /*
 * IN

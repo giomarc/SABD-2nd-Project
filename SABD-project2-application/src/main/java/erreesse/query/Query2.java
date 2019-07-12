@@ -38,17 +38,16 @@ public class Query2 {
                 .assignTimestampsAndWatermarks(new DateTimeAscendingAssigner())
                 .map(new TwoHourMapFunction());
 
-                // timeWindowAll per assegnare la finestra di 1 giorno / 7 giorni / 1 mese
-                // NON POSSO USARE KEYBY altrimenti l'aggregatore incrementa solo la sua chiave
-                // uso aggregatore custom (mappa o array con 12 posizioni)
-                // per ogni elemento aggiunto alla finestra
-                // determino la fascia
-                // faccio hit ++ per ogni fascia
-                // alla scadenza della finestra invoco la process window function
-                // che ha ricevuto la mappa accumulatore dalla aggregate
-                // a questo punto process window function emette una Tupla3<Timestamp, Stringa>
-                // dove Stringa è count h00, count h02, ..., count h20, count h22
-                // NB: se implementiamo la merge dell'accumulatore possiamo portare il parallesismo > 1
+            // timeWindowAll per assegnare la finestra di 1 giorno / 7 giorni / 1 mese
+            // NON POSSO USARE KEYBY altrimenti l'aggregatore incrementa solo la sua chiave
+            // uso aggregatore custom (mappa o array con 12 posizioni)
+            // per ogni elemento aggiunto alla finestra
+            // determino la fascia
+            // faccio hit ++ per ogni fascia
+            // alla scadenza della finestra invoco la process window function
+            // che ha ricevuto la mappa accumulatore dalla aggregate
+            // a questo punto process window function emette una Tupla3<Timestamp, Stringa>
+            // dove Stringa è count h00, count h02, ..., count h20, count h22
 
         DataStream<String> dayStream;
         DataStream<String> weekStream;

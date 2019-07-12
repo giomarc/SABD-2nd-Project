@@ -1,6 +1,5 @@
 package erreesse.operators.cogroup;
 
-import erreesse.metrics.LatencyTuple1;
 import erreesse.metrics.LatencyTuple2;
 import erreesse.pojo.CommentInfoPOJO;
 import erreesse.pojo.LatencyCommentInfoPojo;
@@ -11,7 +10,6 @@ import org.apache.flink.api.common.state.StateTtlConfig;
 import org.apache.flink.api.common.time.Time;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.util.Collector;
-import scala.Tuple2;
 
 import java.util.Iterator;
 
