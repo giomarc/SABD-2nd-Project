@@ -20,19 +20,19 @@ Environment is composed by 9 docker containers:
  
 - HDSF is used to persist flink operator's state
 - Alluxio is used as low latency middleware layer for persisting state between HDFS and Flink
-- Zookeper for high availability for Kafka
+- Zookeeper for high availability for Kafka
 - Kafka as ingestion layer for Flink
 - Flink as data stream processing framework
 
 
-To start the environment
+Starting the environment
 ------
 The environment can be managed by docker-compose. To start, type the following command in docker-compose folder
 ```console
 docker-compose up -d --build
 ```
 
-All containers start automatically, wait few minutes.
+All containers start automatically,just wait a few minutes.
 
 ### Phase 1: Data ingestion
 
@@ -59,7 +59,7 @@ For example
 ```console
 submit-dataset.sh -f Comments_jan-apr2018.csv -s 10000
 ```
-to start the injestion of dataset in kafka at 10000x faster replay speed
+to start the ingestion of dataset in kafka at 10000x faster replay speed
 
 
 For monitoring:
@@ -91,7 +91,7 @@ submit-jar.sh -q query1
 ```
 to start the Flink job for query1.
 
-## Students
+## Owners
 
 Ronci Federico - Computer Science Engineering - University of Rome Tor Vergata
 
