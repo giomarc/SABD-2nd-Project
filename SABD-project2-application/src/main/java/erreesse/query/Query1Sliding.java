@@ -31,12 +31,17 @@ public class Query1Sliding {
         StreamExecutionEnvironment env = RSExecutionEnvironment.getExecutionEnvironment();
 
         KeyedStream<CommentInfoPOJO, String> originalStream = env
+                // connect to Kafka consumer
                 .addSource(new KafkaCommentInfoSource())
+                // convert each string to POJO model
                 .map(line -> CommentInfoPOJO.parseFromStringLine(line))
+                // filter malformed POJOs
                 .filter(new CommentInfoPOJOValidator())
+                // enable latency tracking
                 .map(new ProbabilisticLatencyAssigner())
+                // extract and assing timestamp
                 .assignTimestampsAndWatermarks(new DateTimeAscendingAssigner())
-                //.assignTimestampsAndWatermarks(new DateTimeOutOfOrderAssigner())
+                // create a stream keyed by ArticleID
                 .keyBy(new KeyByArticleID());
 
         DataStream<String> hourStream;
@@ -45,10 +50,17 @@ public class Query1Sliding {
 
 
         hourStream = originalStream
+                // group events in temporal window
+                // using Sliding Window, window size = 1hour, window slide = 15 mins
                 .timeWindow(Time.hours(1),Time.minutes(15))
+                // when each element is added in window, use accumulator to increment the counter
+                // where window triggers, invoke process window function to emit the counter result
                 .aggregate(new ArticleCounterAggregator(), new ArticleCounterProcessWF())
+                // create a keyed stream with key equals window start timestamp
                 .keyBy(new KeyByWindowStart())
+                // group events in temporal window
                 .timeWindow(Time.hours(1),Time.minutes(15))
+                // compute the ranking
                 .apply(new RankingWF());
 
         dayStream = originalStream
@@ -69,7 +81,7 @@ public class Query1Sliding {
         //For throughput compute only
         DataStreamSink<String> stringDataStreamSink = hourStream.union(dayStream, weekStream).addSink(new KafkaCommentInfoSink("query1-output-total"));
 
-
+        // write output query stream on plain text file
         hourStream.writeAsText("/sabd/result/query1/1hour.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
         dayStream.writeAsText("/sabd/result/query1/1day.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
         weekStream.writeAsText("/sabd/result/query1/1week.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
@@ -77,6 +89,7 @@ public class Query1Sliding {
         try {
             env.execute("Query1");
         } catch (ProgramInvocationException | JobCancellationException | CancellationException e) {
+            // catch cancelled hob by user
             System.err.println("Interrupted job by user");
         }
         catch (Exception e) {

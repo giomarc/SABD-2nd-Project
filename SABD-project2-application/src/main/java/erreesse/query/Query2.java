@@ -30,17 +30,24 @@ public class Query2 {
         StreamExecutionEnvironment env = RSExecutionEnvironment.getExecutionEnvironment();
 
         SingleOutputStreamOperator<LatencyTuple1<Integer>> originalStream = env
+                // connect to Kafka consumer
                 .addSource(new KafkaCommentInfoSource())
+                // convert each string to POJO model
                 .map(line -> CommentInfoPOJO.parseFromStringLine(line))
+                // filter malformed POJOs
                 .filter(new CommentInfoPOJOValidator())
+                // enable latency tracking
                 .map(new ProbabilisticLatencyAssigner())
+                // consider only direct comment
                 .filter(cip -> cip.isDirect())
+                // extract and assing timestamp
                 .assignTimestampsAndWatermarks(new DateTimeAscendingAssigner())
+                // create integer element mapped to event hour
                 .map(new TwoHourMapFunction());
 
             // timeWindowAll per assegnare la finestra di 1 giorno / 7 giorni / 1 mese
             // NON POSSO USARE KEYBY altrimenti l'aggregatore incrementa solo la sua chiave
-            // uso aggregatore custom (mappa o array con 12 posizioni)
+            // uso aggregatore custom (array con 12 posizioni)
             // per ogni elemento aggiunto alla finestra
             // determino la fascia
             // faccio hit ++ per ogni fascia
@@ -54,7 +61,10 @@ public class Query2 {
         DataStream<String> monthStream;
 
         dayStream = originalStream
+                // group events in temporal window
                 .timeWindowAll(Time.hours(24))
+                // aggregate with custom accumulator
+                // where window triggers, invoke process window function to emit the counter result
                 .aggregate(new FasciaAggregator(), new FasciaProcessWindowFunction());
 
         weekStream = originalStream
@@ -65,7 +75,7 @@ public class Query2 {
                 .windowAll(new MonthWindowAssigner())
                 .aggregate(new FasciaAggregator(), new FasciaProcessWindowFunction());
 
-
+        // write output query stream on plain text file
         dayStream.writeAsText("/sabd/result/query2/24hour.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
         weekStream.writeAsText("/sabd/result/query2/1week.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
         monthStream.writeAsText("/sabd/result/query2/1month.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);

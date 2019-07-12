@@ -32,8 +32,10 @@ public class ComputeMostPopularUserWF implements AllWindowFunction<LatencyTuple2
                       Iterable<LatencyTuple2<Long, Double>> iterable,
                       Collector<String> out) throws Exception {
 
+        // used for latency tracking
         long timeStamp = timeWindow.getStart();
 
+        // create the ranking data structure
         final int QUEUE_SIZE = 10;
         Comparator<Tuple2<Long, Double>> comparator = (t1, t2) -> (t2._2.compareTo(t1._2));
         PriorityQueue<Tuple2<Long, Double>> ordset = new PriorityQueue<>(QUEUE_SIZE,comparator);
@@ -50,15 +52,19 @@ public class ComputeMostPopularUserWF implements AllWindowFunction<LatencyTuple2
 
         long size = Math.min(10, ordset.size());
 
+        // extract ranked element
         for (int i = 0; i < size; i++) {
             Tuple2<Long, Double> ranked = ordset.poll();
             String ap = String.format(",%d,%.2f",ranked._1,ranked._2);
             sb.append(ap);
         }
 
+        // if latency tracking enabled
+        // print tuple latency on result string
         if (AppConfiguration.PRINT_LATENCY_METRIC) {
             sb.append("|lat:"+ queryLatency);
         }
+        // emit result tuple
         out.collect(sb.toString());
 
 

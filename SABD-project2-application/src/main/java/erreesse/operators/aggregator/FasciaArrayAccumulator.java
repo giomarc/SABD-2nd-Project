@@ -17,6 +17,7 @@ public class FasciaArrayAccumulator {
         }
     }
 
+    // increment the relative counter
     public void hit(int index) {
         checkIndex(index);
         fasciaCounter[index]++;
@@ -27,6 +28,7 @@ public class FasciaArrayAccumulator {
         return fasciaCounter[index];
     }
 
+    // merge two array: sum value index by index
     public FasciaArrayAccumulator mergeWith(FasciaArrayAccumulator otherAcc) {
 
         for (int i =0; i<12; i++) {

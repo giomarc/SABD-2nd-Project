@@ -12,6 +12,7 @@ public class PojoHelper {
     }
 
     private static int getTwoHourKey(int hour) {
+        // return 2 hour interval position
         // hour 15 -> 7
         int remind = hour / 2;
         return remind;

@@ -16,6 +16,8 @@ import java.util.Iterator;
 
 public class ComputePopularUserCGF extends RichCoGroupFunction<CommentInfoPOJO, CommentInfoPOJO, LatencyTuple2<Long, Double>> {
 
+    // use flink state variable shared between different instances of same operator
+    // mapstate with entry of <CommentId, UserId>
     protected transient MapState<Long,Long> mappaCommentiUtenti;
     protected transient long maxTimeStamp = 0L;
 
@@ -39,6 +41,7 @@ public class ComputePopularUserCGF extends RichCoGroupFunction<CommentInfoPOJO, 
                         Long.class
                         ); // default value of the state, if nothing was set
 
+        // use a cache validator policy for mapstate
         StateTtlConfig ttlConfig = StateTtlConfig
                 .newBuilder(Time.days(7))
                 .setUpdateType(StateTtlConfig.UpdateType.OnReadAndWrite)
@@ -59,6 +62,8 @@ public class ComputePopularUserCGF extends RichCoGroupFunction<CommentInfoPOJO, 
         }
     }
 
+    // search for authorid in both direct and indirect stream
+    // since we can have empty iterable of either type
     private Long getAuthorUserID(Iterable<CommentInfoPOJO> direct, Iterable<CommentInfoPOJO> indirect) {
         Long key = null;
         CommentInfoPOJO nextA;
@@ -87,8 +92,6 @@ public class ComputePopularUserCGF extends RichCoGroupFunction<CommentInfoPOJO, 
         // iterableA -> directComment
         // iterableB -> indirectComment
 
-
-
         double totalLike = 0.0;
         for (CommentInfoPOJO singleCip : iterableDirect) {
             totalLike += singleCip.getRecommendations();
@@ -106,7 +109,6 @@ public class ComputePopularUserCGF extends RichCoGroupFunction<CommentInfoPOJO, 
         // update maxTimestamp
         updateMaxTimeStamp(iterableIndirect);
 
-
         double finalResult = 0.3 * totalLike + 0.7 * b;
 
         // estraggo lo userId o dai commenti diretti o dalla mappa di stato in caso di commento indiretto
@@ -116,6 +118,7 @@ public class ComputePopularUserCGF extends RichCoGroupFunction<CommentInfoPOJO, 
         sendToOut.setStartTime(maxTimeStamp);
 
         if (key!=null) {
+            // emit final result tuple
             out.collect(sendToOut);
         }
 

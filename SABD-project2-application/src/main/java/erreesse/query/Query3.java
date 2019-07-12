@@ -30,13 +30,18 @@ public class Query3 {
         StreamExecutionEnvironment env = RSExecutionEnvironment.getExecutionEnvironment();
 
         SingleOutputStreamOperator<CommentInfoPOJO> originalStream = env
+                // connect to Kafka consumer
                 .addSource(new KafkaCommentInfoSource())
+                // convert each string to POJO model
                 .map(line -> CommentInfoPOJO.parseFromStringLine(line))
+                // filter malformed POJOs
                 .filter(new CommentInfoPOJOValidator())
+                // enable latency tracking
                 .map(new ProbabilisticLatencyAssigner())
+                // extract and assing timestamp
                 .assignTimestampsAndWatermarks(new DateTimeAscendingAssigner());
 
-
+        // create two streams, one for direct comments and one for indirect comments
         SingleOutputStreamOperator<CommentInfoPOJO> directComment = originalStream.filter(cip -> cip.isDirect());
         SingleOutputStreamOperator<CommentInfoPOJO> indirectComment = originalStream.filter(cip -> !cip.isDirect());
 
@@ -44,6 +49,10 @@ public class Query3 {
         SingleOutputStreamOperator<String> weekStream;
         SingleOutputStreamOperator<String> monthStream;
 
+
+        // create a cogrouped stream, joining on commendid value
+        // i.e. direct commentid value = indirect inreplyto value
+        // so we can group comment relatives to same article
         CoGroupedStreams<CommentInfoPOJO, CommentInfoPOJO>.Where<Long>.EqualTo cogroupedStreams =
                 directComment.coGroup(indirectComment)
                 .where((KeySelector<CommentInfoPOJO, Long>) commentInfoPOJO -> commentInfoPOJO.getCommentID())
@@ -51,9 +60,13 @@ public class Query3 {
 
 
         hourStream = cogroupedStreams
+                // group events in temporal window
                 .window(TumblingEventTimeWindows.of(Time.days(1)))
+                // compute the user score
                 .apply(new ComputePopularUserCGF())
+                // group events in temporal window
                 .timeWindowAll(Time.days(1))
+                // compute final ranking
                 .apply(new ComputeMostPopularUserWF());
 
         weekStream = cogroupedStreams
@@ -68,6 +81,7 @@ public class Query3 {
                 .windowAll(new MonthWindowAssigner())
                 .apply(new ComputeMostPopularUserWF());
 
+        // write output query stream on plain text file
         hourStream.writeAsText("/sabd/result/query3/1day.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
         weekStream.writeAsText("/sabd/result/query3/1week.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
         monthStream.writeAsText("/sabd/result/query3/1month.txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);

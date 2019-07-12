@@ -18,6 +18,7 @@ public class FasciaProcessWindowFunction extends ProcessAllWindowFunction<Latenc
                         Iterable<LatencyTuple1<FasciaArrayAccumulator>> iterable,
                         Collector<String> collector) throws Exception {
 
+        // used to crete the key for aggregate events within same time interval
         long timestamp = context.window().getStart();
         StringBuilder sb = new StringBuilder();
         sb.append(timestamp);
@@ -32,12 +33,13 @@ public class FasciaProcessWindowFunction extends ProcessAllWindowFunction<Latenc
             sb.append(",");
             sb.append(acc.getCountByIndex(i));
         }
+        // if latency tracking enabled
+        // print tuple latency on result string
         if (AppConfiguration.PRINT_LATENCY_METRIC) {
             sb.append("|lat:"+windowLatency+"ms");
         }
 
-
-
+        // emit final result tuple
         collector.collect(sb.toString());
 
     }

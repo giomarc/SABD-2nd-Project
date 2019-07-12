@@ -20,6 +20,7 @@ public class ArticleCounterProcessWF extends ProcessWindowFunction<LatencyTuple1
                         Iterable<LatencyTuple1<Long>> elements,
                         Collector<LatencyTuple3<Long,String,Long>> out) throws Exception {
 
+        // used to crete the key for aggregate events within same time interval
         long timestamp = context.window().getStart();
         long count = elements.iterator().next()._1;
 
@@ -27,7 +28,7 @@ public class ArticleCounterProcessWF extends ProcessWindowFunction<LatencyTuple1
         LatencyTuple3 result = new LatencyTuple3<>(timestamp,key,count);
         result.setStartTime(lastTupleOfWindowTimestamp);
 
-
+        // emit the result tuple
         out.collect(result);
 
     }

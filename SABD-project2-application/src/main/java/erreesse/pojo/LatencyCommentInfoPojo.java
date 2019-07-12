@@ -3,6 +3,7 @@ package erreesse.pojo;
 import erreesse.metrics.LatencyMarker;
 import lombok.Getter;
 
+// special pojo class for latency tracking
 public class LatencyCommentInfoPojo extends CommentInfoPOJO implements LatencyMarker {
     @Getter
     protected long startTime = 0L;

@@ -25,9 +25,10 @@ public class RankingWF implements WindowFunction<LatencyTuple3<Long, String, Lon
                       Iterable<LatencyTuple3<Long,String,Long>> iterable,
                       Collector<String> out) throws Exception {
 
+        // used for latency tracking
         long lastPTinAllWindow = 0;
 
-
+        // create the ranking data structure
         final int QUEUE_SIZE = 3;
         Comparator<Tuple2<String,Long>> comparator = (t1, t2) -> (t2._2.compareTo(t1._2));
         PriorityQueue<Tuple2<String,Long>> ordset = new PriorityQueue<>(QUEUE_SIZE,comparator);
@@ -48,14 +49,18 @@ public class RankingWF implements WindowFunction<LatencyTuple3<Long, String, Lon
 
         long size = Math.min(QUEUE_SIZE, ordset.size());
 
+        // extract ranked element
         for (int i =0; i< size; i++) {
             Tuple2<String, Long> ranked = ordset.poll();
             sb.append(","+ranked._1+","+ranked._2);
         }
+        // if latency tracking enabled
+        // print tuple latency on result string
         if (AppConfiguration.PRINT_LATENCY_METRIC) {
             sb.append("|lat:"+windowLatency+"ms");
         }
 
+        // emit result tuple
         out.collect(sb.toString());
 
     }
