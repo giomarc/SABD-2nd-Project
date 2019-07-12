@@ -76,6 +76,10 @@ public class DataSourceSimulator {
 
             firstTimestamp = curTimestamp;
         }
+
+        String poisonedTuple = "1546300799,ffffffffffffffffffffffff,9999,9999,comment,1546300799,1,False,0,,0,Unknown,Unknown,9999,\"-\",,,,,,,,,,,,,,,,,,,";
+        sendToTopic(poisonedTuple);
+
     }
 
     private void addDelay(long deltaTimeStamp) {
